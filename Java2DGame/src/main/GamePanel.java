@@ -43,40 +43,64 @@ public class GamePanel extends JPanel implements Runnable {
 		gameThread.start();
 	}
 
+//	@Override
+//	public void run() {
+//		
+//		double drawInterval = 1000000000/FPS; // 0.01666 seconds
+//		double nextDrawTime = System.nanoTime() + drawInterval;
+//		
+//		
+//		while (gameThread != null) {
+//			// System.out.println("The game loop is running");
+//			
+//			// 1. UPDATE: update informations such as player's position
+//			update();
+//			
+//			// 2. DRAW: re-draw the screen with the updated information
+//			repaint(); // this somehow calls to the paintComponent method
+//			
+//			
+//			try {
+//				double remainingTime = nextDrawTime - System.nanoTime();
+//				remainingTime /= 1000000; // change from nanosecond to millisecond
+//				
+//				if (remainingTime < 0) {
+//					remainingTime = 0;
+//				}
+//				
+//				Thread.sleep((long) remainingTime);
+//				
+//				nextDrawTime += drawInterval;
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//	}
+	
 	@Override
 	public void run() {
 		
-		double drawInterval = 1000000000/FPS; // 0.01666 seconds
-		double nextDrawTime = System.nanoTime() + drawInterval;
-		
+		double drawInterval = 1000000000/FPS;
+		double delta = 0;
+		long lastTime = System.nanoTime();
+		long currentTime;
 		
 		while (gameThread != null) {
-			// System.out.println("The game loop is running");
 			
-			// 1. UPDATE: update informations such as player's position
-			update();
+			currentTime = System.nanoTime();
 			
-			// 2. DRAW: re-draw the screen with the updated information
-			repaint(); // this somehow calls to the paintComponent method
+			delta += (currentTime - lastTime) / drawInterval;
 			
+			lastTime = currentTime;
 			
-			try {
-				double remainingTime = nextDrawTime - System.nanoTime();
-				remainingTime /= 1000000; // change from nanosecond to millisecond
-				
-				if (remainingTime < 0) {
-					remainingTime = 0;
-				}
-				
-				Thread.sleep((long) remainingTime);
-				
-				nextDrawTime += drawInterval;
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (delta >= 1) {
+				update();
+				repaint();
+				delta--;
 			}
 		}
-		
 	}
 	
 	public void update() {
