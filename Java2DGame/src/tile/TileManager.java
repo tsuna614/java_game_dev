@@ -33,15 +33,18 @@ public class TileManager {
 			
 			tile[1] = new Tile();
 			tile[1].tileImage = ImageIO.read(getClass().getResourceAsStream("/tiles/wall.png"));
+			tile[1].hasCollision = true;
 			
 			tile[2] = new Tile();
 			tile[2].tileImage = ImageIO.read(getClass().getResourceAsStream("/tiles/water.png"));
+			tile[2].hasCollision = true;
 			
 			tile[3] = new Tile();
 			tile[3].tileImage = ImageIO.read(getClass().getResourceAsStream("/tiles/earth.png"));
 			
 			tile[4] = new Tile();
 			tile[4].tileImage = ImageIO.read(getClass().getResourceAsStream("/tiles/tree.png"));
+			tile[4].hasCollision = true;
 			
 			tile[5] = new Tile();
 			tile[5].tileImage = ImageIO.read(getClass().getResourceAsStream("/tiles/sand.png"));
@@ -82,23 +85,25 @@ public class TileManager {
 		for (int i=0; i<gp.maxWorldRow; i++) {
 			for (int j=0; j<gp.maxWorldCol; j++) {
 				
+//				int worldX = j * gp.tileSize;
+//				int worldY = i * gp.tileSize;
+//				int screenX = worldX - gp.player.worldX + gp.player.screenX;
+//				int screenY = worldY - gp.player.worldY + gp.player.screenY;
+//				// basically, we move THE MAP to fit inside the camera (the camera stays at 0,0)
+//				
+//				// we add/minus 100 to fill in the black spaces
+//				// in the future if you don't understand, you can try removing 100 and see how it changes
+//				if (worldX >= gp.player.worldX - gp.player.screenX - 100 &&
+//					worldX <= gp.player.worldX + gp.player.screenX + 100 &&
+//					worldY >= gp.player.worldY - gp.player.screenY - 100 &&
+//					worldY <= gp.player.worldY + gp.player.screenY+ 100) {
+//					
+//					g2.drawImage(tile[mapTileNum[j][i]].tileImage, screenX, screenY, gp.tileSize, gp.tileSize, null);
+//				}
+				
 				int worldX = j * gp.tileSize;
 				int worldY = i * gp.tileSize;
-				int screenX = worldX - gp.player.worldX + gp.player.screenX;
-				int screenY = worldY - gp.player.worldY + gp.player.screenY;
-				// basically, we move THE MAP to fit inside the camera (the camera stays at 0,0)
-				
-				// we add/minus 100 to fill in the black spaces
-				// in the future if you don't understand, you can try removing 100 and see how it changes
-				if (worldX >= gp.player.worldX - gp.player.screenX - 100 &&
-					worldX <= gp.player.worldX + gp.player.screenX + 100 &&
-					worldY >= gp.player.worldY - gp.player.screenY - 100 &&
-					worldY <= gp.player.worldY + gp.player.screenY+ 100) {
-					
-					g2.drawImage(tile[mapTileNum[j][i]].tileImage, screenX, screenY, gp.tileSize, gp.tileSize, null);
-				}
-				
-				
+				g2.drawImage(tile[mapTileNum[j][i]].tileImage, worldX, worldY, gp.tileSize, gp.tileSize, null);
 			}
 		}
 		

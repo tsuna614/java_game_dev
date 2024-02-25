@@ -2,6 +2,7 @@ package entity;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -15,17 +16,19 @@ public class Player extends Entity {
 	GamePanel gp;
 	KeyHandler keyHandler;
 	
-	public final int screenX;
-	public final int screenY; // these indicate where we draw the player on the screen
+//	public final int screenX;
+//	public final int screenY; // these indicate where we draw the player on the screen
 	
 	public Player(GamePanel gp, KeyHandler keyH) {
 		this.gp = gp;
 		this.keyHandler = keyH;
 		
-		screenX = gp.screenWidth / 2 - (gp.tileSize/2);
-		screenY = gp.screenHeight / 2 - (gp.tileSize/2);
+//		screenX = gp.screenWidth / 2 - (gp.tileSize/2);
+//		screenY = gp.screenHeight / 2 - (gp.tileSize/2);
 		// we have to minus half the length of the player's tileSize so that the player
 		// is positioned exactly at the center
+		
+		hitbox = new Rectangle(8, 16, 32, 32);
 		
 		setDefaultValues();
 		getPlayerImage();
@@ -76,6 +79,8 @@ public class Player extends Entity {
 		if (!keyHandler.upPressed && !keyHandler.downPressed && !keyHandler.leftPressed && !keyHandler.rightPressed)
 			return;
 		
+		// this is to alternate between 2 sprites to make an animation
+		// as you can tell, it only work if it has only 2 different sprites, so it kinda sucks
 		spriteCounter++;
 		if (spriteCounter > 10) {
 			if (spriteNum == 1)
@@ -126,6 +131,6 @@ public class Player extends Entity {
 			}
 		}
 		
-		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+		g2.drawImage(image, worldX, worldY, gp.tileSize, gp.tileSize, null);
 	}
 }

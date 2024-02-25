@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
+import entity.CollisionBlock;
 import entity.Player;
 import tile.TileManager;
 
@@ -23,6 +24,8 @@ public class GamePanel extends JPanel implements Runnable {
 	public final int screenWidth = maxScreenCol * tileSize; // 768 pixels
 	public final int screenHeight = maxScreenRow * tileSize; // 576 pixels
 	
+	int camX, camY;
+	
 	// WORLD SETTINGS
 	public final int maxWorldCol = 50;
 	public final int maxWorldRow = 50;
@@ -36,6 +39,9 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	public Player player = new Player(this, keyHandler);
 	TileManager tileManager = new TileManager(this);
+	
+	// COLLISION BLOCKS
+	CollisionBlock collisionBlocks[];
 	
 	
 	public GamePanel() {
@@ -122,6 +128,9 @@ public class GamePanel extends JPanel implements Runnable {
 		super.paintComponent(g);
 		
 		Graphics2D g2 = (Graphics2D)g; // change Graphics to Graphics2D
+		
+		g2.translate(- (player.worldX - screenWidth / 2), - (player.worldY - screenHeight / 2));
+		// wny we have to put minus in front? i have no god damn idea
 		
 		tileManager.draw(g2);
 		
