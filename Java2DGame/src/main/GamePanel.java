@@ -4,11 +4,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JPanel;
 
 import entity.CollisionBlock;
 import entity.Player;
+import objects.DoorObject;
+import objects.GameObject;
+import objects.KeyObject;
 import tile.TileManager;
 
 // implements Runnable is for the gameThread
@@ -41,7 +46,7 @@ public class GamePanel extends JPanel implements Runnable {
 	TileManager tileManager = new TileManager(this);
 	
 	// COLLISION BLOCKS
-	CollisionBlock collisionBlocks[];
+	public ArrayList<GameObject> gameObjects = new ArrayList<>();
 	
 	
 	public GamePanel() {
@@ -51,6 +56,27 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		this.addKeyListener(keyHandler);
 		this.setFocusable(true); // with this, this GamePanel can be 'focused' to receive key input
+		
+		tileManager.loadMap("map02.txt");
+		
+		KeyObject key = new KeyObject(1000, 1000, this);
+		DoorObject door = new DoorObject(tileSize * 10, tileSize * 11, this);
+		KeyObject dummyObject = new KeyObject(-10000, -10000, this);
+		
+		gameObjects.add(door);
+		gameObjects.add(key);
+		gameObjects.add(dummyObject);
+	}
+	
+	public void addGameObject(GameObject object) {
+		this.gameObjects.add(object);
+	}
+	
+	public void removeGameObject(GameObject object) {
+		// wow for some reason if the object you're removing is the last object in the arraylist
+		// this exception will occur: Exception in thread "Thread-0" java.util.ConcurrentModificationException
+		// unreal
+		this.gameObjects.remove(gameObjects.indexOf(object));
 	}
 	
 	public void startGameThread() {
@@ -94,6 +120,18 @@ public class GamePanel extends JPanel implements Runnable {
 //		
 //	}
 	
+	public boolean checkCollision(Player player, GameObject block) {
+		final float playerX = player.worldX + player.hitbox.x;
+		final float playerY = player.worldY + player.hitbox.y;
+		final float playerWidth = player.hitbox.width;
+		final float playerHeight = player.hitbox.height;
+		
+		return playerX < block.x + tileSize &&
+				playerX + playerWidth > block.x &&
+				playerY < block.y + tileSize &&
+				playerY + playerHeight > block.y;
+	}
+	
 	@Override
 	public void run() {
 		
@@ -132,10 +170,29 @@ public class GamePanel extends JPanel implements Runnable {
 		g2.translate(- (player.worldX - screenWidth / 2), - (player.worldY - screenHeight / 2));
 		// wny we have to put minus in front? i have no god damn idea
 		
-		tileManager.draw(g2);
+//		tileManager.draw(g2);
+		
+//		for (final CollisionBlock block : collisionBlocks) {
+//			block.draw(g2);
+//		}
+		
+		for (GameObject object : gameObjects) {
+			if (object instanceof KeyObject) {
+				object.draw(g2);
+			} else if (object instanceof DoorObject) {
+				object.draw(g2);
+			} else {
+				tileManager.drawSingle(g2, object.x, object.y);
+			}
+			
+//			else {
+//				g2.setColor(Color.white);
+//				
+//				g2.fillRect(object.x, object.y, 16 * 3, 16 * 3);
+//			}
+		}
 		
 		player.draw(g2);
-		
 		
 		g2.dispose();
 	}

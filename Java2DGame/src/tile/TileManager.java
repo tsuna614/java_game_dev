@@ -5,10 +5,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import entity.CollisionBlock;
 import main.GamePanel;
+import objects.GameObject;
+import objects.KeyObject;
 
 public class TileManager {
 
@@ -23,7 +27,7 @@ public class TileManager {
 		mapTileNum = new int [gp.maxWorldCol][gp.maxWorldRow];
 		
 		getTileImage();
-		loadMap("map02.txt");
+		
 	}
 	
 	public void getTileImage() {
@@ -71,6 +75,16 @@ public class TileManager {
 					int num = Integer.parseInt(numbers[j]);
 					
 					mapTileNum[j][i] = num;
+					
+					
+					GameObject block = new GameObject(j * gp.tileSize, i * gp.tileSize);
+					gp.addGameObject(block);
+					
+					// default of hasCollision is false so if it doesn't have collision we don't need to do anything
+					if (tile[num].hasCollision) {
+						block.hasCollision = true;
+					} 
+					
 				}
 			}
 			
@@ -108,5 +122,9 @@ public class TileManager {
 		}
 		
 //		g2.drawImage(tile[0].tileImage, 0, 0, gp.tileSize, gp.tileSize, null);
+	}
+	
+	public void drawSingle(Graphics2D g2, int positionX, int positionY) {
+		g2.drawImage(tile[mapTileNum[positionX / gp.tileSize][positionY / gp.tileSize]].tileImage, positionX, positionY, gp.tileSize, gp.tileSize, null);
 	}
 }

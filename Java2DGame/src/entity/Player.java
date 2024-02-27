@@ -1,6 +1,5 @@
 package entity;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -10,11 +9,18 @@ import javax.imageio.ImageIO;
 
 import main.GamePanel;
 import main.KeyHandler;
+import objects.DoorObject;
+import objects.GameObject;
+import objects.KeyObject;
  
 public class Player extends Entity {
 	
 	GamePanel gp;
 	KeyHandler keyHandler;
+	
+	final float speed = 4;
+	
+	int hasKey = 0;
 	
 //	public final int screenX;
 //	public final int screenY; // these indicate where we draw the player on the screen
@@ -30,6 +36,8 @@ public class Player extends Entity {
 		
 		hitbox = new Rectangle(8, 16, 32, 32);
 		
+		velocity = new Vector2(0,0);
+		
 		setDefaultValues();
 		getPlayerImage();
 	}
@@ -39,8 +47,8 @@ public class Player extends Entity {
 //		worldY = 0;
 		worldX = gp.tileSize * 23;
 		worldY = gp.tileSize * 21;
-		speed = 4;
 		direction = "down";
+		collisionOn = true;
 	}
 	
 	public void getPlayerImage() {
@@ -59,28 +67,111 @@ public class Player extends Entity {
 	}
 	
 	public void update() {
+		checkPlayerInput();
+		updatePlayerVerticalPosition();
+		if (collisionOn) {
+			checkVerticalCollision();
+		}
+		updatePlayerHorizontalPosition();
+		if (collisionOn) {
+			checkHorizontalCollision();
+		}
+		alternateSprite();
+	}
+	
+	public void checkPlayerInput() {
+		velocity.x = 0;
+		velocity.y = 0;
+		
 		if (keyHandler.upPressed) {
 			direction = "up";
-			worldY -= speed;
+			velocity.y -= speed;
 		}
 		if (keyHandler.downPressed) {
 			direction = "down";
-			worldY += speed;
+			velocity.y += speed;
 		}
 		if (keyHandler.leftPressed) {
 			direction = "left";
-			worldX -= speed;
+			velocity.x -= speed;
 		}
 		if (keyHandler.rightPressed) {
 			direction = "right";
-			worldX += speed;
+			velocity.x += speed;
 		}
-		
-		if (!keyHandler.upPressed && !keyHandler.downPressed && !keyHandler.leftPressed && !keyHandler.rightPressed)
-			return;
-		
+	}
+	
+	public void checkHorizontalCollision() {
+		for (final GameObject block : gp.gameObjects) {
+			if (gp.checkCollision(this, block) && block.hasCollision) {
+				if (block.hasCollision) {
+					if (velocity.x < 0) {
+						velocity.x = 0;
+						this.worldX = block.x + gp.tileSize - hitbox.x;
+					}
+					else if (velocity.x > 0) {
+						velocity.x = 0;
+						this.worldX = block.x - gp.tileSize + hitbox.x;
+					}
+				}
+				if (block instanceof KeyObject) {
+					System.out.print("Key picked up");
+					hasKey++;
+					gp.removeGameObject(block);
+				}
+				if (block instanceof DoorObject) {
+					if (hasKey > 0) {
+						System.out.print("Door opened");
+						hasKey--;
+						gp.removeGameObject(block);
+					}
+				}
+			}
+			
+		}
+	}
+	
+	public void checkVerticalCollision() {
+		for (final GameObject block : gp.gameObjects) {
+			if (gp.checkCollision(this, block) && block.hasCollision) {
+				if (velocity.y < 0) {
+					velocity.y = 0;
+					this.worldY = block.y + gp.tileSize - hitbox.y;
+				}
+				else if (velocity.y > 0) {
+					velocity.y = 0;
+					this.worldY = block.y - gp.tileSize;
+				}
+				if (block instanceof KeyObject) {
+					System.out.print("Key picked up");
+					hasKey++;
+					gp.removeGameObject(block);
+				}
+				if (block instanceof DoorObject) {
+					if (hasKey > 0) {
+						System.out.print("Door opened");
+						hasKey--;
+						gp.removeGameObject(block);
+					}
+				}
+			}
+			
+		}
+	}
+	
+	public void updatePlayerHorizontalPosition() {
+		worldX += velocity.x;
+	}
+	
+	public void updatePlayerVerticalPosition() {
+		worldY += velocity.y;
+	}
+	
+	public void alternateSprite() {
 		// this is to alternate between 2 sprites to make an animation
 		// as you can tell, it only work if it has only 2 different sprites, so it kinda sucks
+		if (!keyHandler.upPressed && !keyHandler.downPressed && !keyHandler.leftPressed && !keyHandler.rightPressed)
+			return;
 		spriteCounter++;
 		if (spriteCounter > 10) {
 			if (spriteNum == 1)
