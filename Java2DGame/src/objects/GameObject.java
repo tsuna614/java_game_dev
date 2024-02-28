@@ -33,6 +33,8 @@ public class GameObject {
 	}
 	
 	public void draw(Graphics2D g2) {
+		g2.rotate(Math.toRadians(180), x + gp.tileSize / 2, y + gp.tileSize / 2);
 		g2.drawImage(sprite, x, y, gp.tileSize, gp.tileSize, null);
+		g2.rotate(Math.toRadians(-180), x + gp.tileSize / 2, y + gp.tileSize / 2);
 	}
 }

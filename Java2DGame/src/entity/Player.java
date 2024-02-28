@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 
@@ -21,6 +22,8 @@ public class Player extends Entity {
 	final float speed = 4;
 	
 	int hasKey = 0;
+	
+	float rotationAngle = 0;
 	
 //	public final int screenX;
 //	public final int screenY; // these indicate where we draw the player on the screen
@@ -67,6 +70,11 @@ public class Player extends Entity {
 	}
 	
 	public void update() {
+		if (rotationAngle > 360) {
+			rotationAngle = 1;
+		} else if (rotationAngle < 0) {
+			rotationAngle = 359;
+		}
 		checkPlayerInput();
 		updatePlayerVerticalPosition();
 		if (collisionOn) {
@@ -99,10 +107,23 @@ public class Player extends Entity {
 			direction = "right";
 			velocity.x += speed;
 		}
+		
+		
+//		this.exchangeAngleToVelocity(rotationAngle);
+//		
+//		if (keyHandler.leftPressed) {
+//			rotationAngle -= 2;
+//		}
+//		if (keyHandler.rightPressed) {
+//			rotationAngle += 2;
+//		}
 	}
 	
 	public void checkHorizontalCollision() {
-		for (final GameObject block : gp.gameObjects) {
+		Iterator<GameObject> iter = gp.gameObjects.iterator();
+		while (iter.hasNext()) {
+			GameObject block = iter.next();
+//		for (final GameObject block : gp.gameObjects) {
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.hasCollision) {
 					if (velocity.x < 0) {
@@ -117,13 +138,13 @@ public class Player extends Entity {
 				if (block instanceof KeyObject) {
 					System.out.print("Key picked up");
 					hasKey++;
-					gp.removeGameObject(block);
+					iter.remove();
 				}
 				if (block instanceof DoorObject) {
 					if (hasKey > 0) {
 						System.out.print("Door opened");
 						hasKey--;
-						gp.removeGameObject(block);
+						iter.remove();
 					}
 				}
 			}
@@ -132,7 +153,10 @@ public class Player extends Entity {
 	}
 	
 	public void checkVerticalCollision() {
-		for (final GameObject block : gp.gameObjects) {
+		Iterator<GameObject> iter = gp.gameObjects.iterator();
+		while (iter.hasNext()) {
+			GameObject block = iter.next();
+//		for (final GameObject block : gp.gameObjects) {
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (velocity.y < 0) {
 					velocity.y = 0;
@@ -145,25 +169,28 @@ public class Player extends Entity {
 				if (block instanceof KeyObject) {
 					System.out.print("Key picked up");
 					hasKey++;
-					gp.removeGameObject(block);
+					iter.remove();
 				}
 				if (block instanceof DoorObject) {
 					if (hasKey > 0) {
 						System.out.print("Door opened");
 						hasKey--;
-						gp.removeGameObject(block);
+						iter.remove();
 					}
 				}
 			}
 			
 		}
 	}
-	
 	public void updatePlayerHorizontalPosition() {
+//		if (keyHandler.upPressed) worldX += velocity.x;
+//		else if (keyHandler.downPressed) worldX -= velocity.x;
 		worldX += velocity.x;
 	}
 	
 	public void updatePlayerVerticalPosition() {
+//		if (keyHandler.upPressed) worldY += velocity.y;
+//		else if (keyHandler.downPressed) worldY -= velocity.y;
 		worldY += velocity.y;
 	}
 	
@@ -222,6 +249,9 @@ public class Player extends Entity {
 			}
 		}
 		
-		g2.drawImage(image, worldX, worldY, gp.tileSize, gp.tileSize, null);
+//		g2.rotate(Math.toRadians(rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);
+		g2.drawImage(image, (int) worldX, (int) worldY, gp.tileSize, gp.tileSize, null);
+//		g2.drawRect((int) worldX, (int) worldY, gp.tileSize, gp.tileSize);
+//		g2.rotate(Math.toRadians(-rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);
 	}
 }

@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -60,24 +61,35 @@ public class GamePanel extends JPanel implements Runnable {
 		tileManager.loadMap("map02.txt");
 		
 		KeyObject key = new KeyObject(1000, 1000, this);
+		KeyObject key2 = new KeyObject(1400, 1000, this);
+		KeyObject key3 = new KeyObject(1200, 1000, this);
 		DoorObject door = new DoorObject(tileSize * 10, tileSize * 11, this);
-		KeyObject dummyObject = new KeyObject(-10000, -10000, this);
+		DoorObject door2 = new DoorObject(tileSize * 12, tileSize * 23, this);
 		
-		gameObjects.add(door);
 		gameObjects.add(key);
-		gameObjects.add(dummyObject);
+		gameObjects.add(key2);
+		gameObjects.add(key3);
+		gameObjects.add(door2);
+		gameObjects.add(door);
 	}
 	
 	public void addGameObject(GameObject object) {
 		this.gameObjects.add(object);
 	}
 	
-	public void removeGameObject(GameObject object) {
-		// wow for some reason if the object you're removing is the last object in the arraylist
-		// this exception will occur: Exception in thread "Thread-0" java.util.ConcurrentModificationException
-		// unreal
-		this.gameObjects.remove(gameObjects.indexOf(object));
-	}
+//	public void removeGameObject(GameObject object) {
+//		// wow for some reason if the object you're removing is NOT the second last object in the arraylist
+//		// this exception will occur: Exception in thread "Thread-0" java.util.ConcurrentModificationException
+//		// unreal
+//		this.gameObjects.remove(gameObjects.indexOf(object));
+//		
+//		Iterator<GameObject> iter = this.gameObjects.iterator();
+//		while (iter.hasNext()) {
+//		    if (iter.next().equals(object)) {
+//		        iter.remove();
+//		    }
+//		}
+//	}
 	
 	public void startGameThread() {
 		gameThread = new Thread(this);
