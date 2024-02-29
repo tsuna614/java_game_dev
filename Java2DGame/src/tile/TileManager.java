@@ -78,12 +78,10 @@ public class TileManager {
 					
 					
 					GameObject block = new GameObject(j * gp.tileSize, i * gp.tileSize);
+					if (!tile[num].hasCollision) {
+						block.isBlocking = false;
+					}
 					gp.addGameObject(block);
-					
-					// default of hasCollision is false so if it doesn't have collision we don't need to do anything
-					if (tile[num].hasCollision) {
-						block.hasCollision = true;
-					} 
 					
 				}
 			}

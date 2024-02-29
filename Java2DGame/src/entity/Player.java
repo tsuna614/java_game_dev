@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 
 import main.GamePanel;
 import main.KeyHandler;
+import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
@@ -19,7 +20,7 @@ public class Player extends Entity {
 	GamePanel gp;
 	KeyHandler keyHandler;
 	
-	final float speed = 4;
+	float speed = 4;
 	
 	int hasKey = 0;
 	
@@ -125,7 +126,7 @@ public class Player extends Entity {
 			GameObject block = iter.next();
 //		for (final GameObject block : gp.gameObjects) {
 			if (gp.checkCollision(this, block) && block.hasCollision) {
-				if (block.hasCollision) {
+				if (block.isBlocking) {
 					if (velocity.x < 0) {
 						velocity.x = 0;
 						this.worldX = block.x + gp.tileSize - hitbox.x;
@@ -135,53 +136,56 @@ public class Player extends Entity {
 						this.worldX = block.x - gp.tileSize + hitbox.x;
 					}
 				}
-				if (block instanceof KeyObject) {
-					System.out.print("Key picked up");
-					hasKey++;
-					iter.remove();
-				}
-				if (block instanceof DoorObject) {
-					if (hasKey > 0) {
-						System.out.print("Door opened");
-						hasKey--;
-						iter.remove();
-					}
-				}
+				checkOtherGameObjectCollision(block, iter);
 			}
 			
 		}
 	}
 	
 	public void checkVerticalCollision() {
+		// using Iterator + while loop instead of just foreach loop to prevent the stupid ConcurrentModificationException bug
 		Iterator<GameObject> iter = gp.gameObjects.iterator();
 		while (iter.hasNext()) {
 			GameObject block = iter.next();
 //		for (final GameObject block : gp.gameObjects) {
 			if (gp.checkCollision(this, block) && block.hasCollision) {
-				if (velocity.y < 0) {
-					velocity.y = 0;
-					this.worldY = block.y + gp.tileSize - hitbox.y;
-				}
-				else if (velocity.y > 0) {
-					velocity.y = 0;
-					this.worldY = block.y - gp.tileSize;
-				}
-				if (block instanceof KeyObject) {
-					System.out.print("Key picked up");
-					hasKey++;
-					iter.remove();
-				}
-				if (block instanceof DoorObject) {
-					if (hasKey > 0) {
-						System.out.print("Door opened");
-						hasKey--;
-						iter.remove();
+				if (block.isBlocking) {
+					if (velocity.y < 0) {
+						velocity.y = 0;
+						this.worldY = block.y + gp.tileSize - hitbox.y;
+					}
+					else if (velocity.y > 0) {
+						velocity.y = 0;
+						this.worldY = block.y - gp.tileSize;
 					}
 				}
+				checkOtherGameObjectCollision(block, iter);
 			}
 			
 		}
 	}
+	
+	public void checkOtherGameObjectCollision(GameObject block, Iterator<GameObject> iter) {
+		if (block instanceof KeyObject) {
+			System.out.println("Key picked up");
+			gp.playSFX("pickupCoin.wav");
+			hasKey++;
+			iter.remove();
+		} else if (block instanceof DoorObject) {
+			if (hasKey > 0) {
+				System.out.println("Door opened");
+				gp.playSFX("doorOpened.wav");
+				hasKey--;
+				iter.remove();
+			}
+		} else if (block instanceof BootsObject) {
+			System.out.println("Boots picked up");
+			gp.playSFX("powerUp.wav");
+			speed += 2;
+			iter.remove();
+		}
+	}
+	
 	public void updatePlayerHorizontalPosition() {
 //		if (keyHandler.upPressed) worldX += velocity.x;
 //		else if (keyHandler.downPressed) worldX -= velocity.x;

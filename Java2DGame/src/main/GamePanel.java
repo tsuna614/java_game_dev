@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 
 import entity.CollisionBlock;
 import entity.Player;
+import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
@@ -43,11 +44,17 @@ public class GamePanel extends JPanel implements Runnable {
 	KeyHandler keyHandler = new KeyHandler();
 	Thread gameThread;
 	
+	// PLAYER
 	public Player player = new Player(this, keyHandler);
+	
+	// DRAW TILES AND SET INVISIBLE WALLS
 	TileManager tileManager = new TileManager(this);
 	
 	// COLLISION BLOCKS
 	public ArrayList<GameObject> gameObjects = new ArrayList<>();
+	
+	// SOUND
+	Sound sound = new Sound();
 	
 	
 	public GamePanel() {
@@ -60,36 +67,34 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		tileManager.loadMap("map02.txt");
 		
+		
+		playMusic("BlueBoyAdventure.wav");
+		
 		KeyObject key = new KeyObject(1000, 1000, this);
 		KeyObject key2 = new KeyObject(1400, 1000, this);
 		KeyObject key3 = new KeyObject(1200, 1000, this);
 		DoorObject door = new DoorObject(tileSize * 10, tileSize * 11, this);
 		DoorObject door2 = new DoorObject(tileSize * 12, tileSize * 23, this);
+		BootsObject boot = new BootsObject(tileSize * 23, tileSize * 39, this);
 		
 		gameObjects.add(key);
 		gameObjects.add(key2);
 		gameObjects.add(key3);
-		gameObjects.add(door2);
 		gameObjects.add(door);
+		gameObjects.add(door2);
+		gameObjects.add(boot);
 	}
 	
 	public void addGameObject(GameObject object) {
 		this.gameObjects.add(object);
 	}
 	
-//	public void removeGameObject(GameObject object) {
-//		// wow for some reason if the object you're removing is NOT the second last object in the arraylist
-//		// this exception will occur: Exception in thread "Thread-0" java.util.ConcurrentModificationException
-//		// unreal
-//		this.gameObjects.remove(gameObjects.indexOf(object));
-//		
-//		Iterator<GameObject> iter = this.gameObjects.iterator();
-//		while (iter.hasNext()) {
-//		    if (iter.next().equals(object)) {
-//		        iter.remove();
-//		    }
-//		}
-//	}
+	public void removeGameObject(GameObject object) {
+		// wow for some reason if the object you're removing is NOT the second last object in the arraylist
+		// this exception will occur: Exception in thread "Thread-0" java.util.ConcurrentModificationException
+		// unreal
+		this.gameObjects.remove(object);
+	}
 	
 	public void startGameThread() {
 		gameThread = new Thread(this);
@@ -193,6 +198,8 @@ public class GamePanel extends JPanel implements Runnable {
 				object.draw(g2);
 			} else if (object instanceof DoorObject) {
 				object.draw(g2);
+			} else if (object instanceof BootsObject) {
+				object.draw(g2);
 			} else {
 				tileManager.drawSingle(g2, object.x, object.y);
 			}
@@ -207,5 +214,21 @@ public class GamePanel extends JPanel implements Runnable {
 		player.draw(g2);
 		
 		g2.dispose();
+	}
+	
+	public void playMusic(String fileName) {
+		sound.setFile(fileName);
+		sound.play();
+		sound.loop();
+	}
+	
+	public void stopMusic(String fileName) {
+		sound.stop();
+	}
+	
+	public void playSFX(String fileName) {
+		sound.setFile(fileName);
+		sound.setVolume(0.2f);
+		sound.play();
 	}
 }
