@@ -15,7 +15,7 @@ public class GameObject {
 	public boolean hasCollision = true;
 	public boolean isBlocking = true;
 	
-	BufferedImage sprite;
+	public BufferedImage sprite;
 	
 	GamePanel gp;
 	

@@ -5,9 +5,13 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import HUD.GUI;
 import main.GamePanel;
 import main.KeyHandler;
 import objects.BootsObject;
@@ -22,9 +26,26 @@ public class Player extends Entity {
 	
 	float speed = 4;
 	
-	int hasKey = 0;
+	public int hasKey = 0;
 	
 	float rotationAngle = 0;
+	
+	// SET TIMER FUNCTION TO DELETE GUI TEXT AFTER 1 SECOND
+	Timer timer = new Timer();
+	class DeleteGUI extends TimerTask {
+
+	    private final GUI gui;
+
+
+	    DeleteGUI ( GUI gui )
+	    {
+	      this.gui = gui;
+	    }
+
+	    public void run() {
+	    	gp.GUIList.remove(gui);
+	    }
+	}
 	
 //	public final int screenX;
 //	public final int screenY; // these indicate where we draw the player on the screen
@@ -70,18 +91,18 @@ public class Player extends Entity {
 		}
 	}
 	
-	public void update() {
+	public void update(double dt) {
 		if (rotationAngle > 360) {
 			rotationAngle = 1;
 		} else if (rotationAngle < 0) {
 			rotationAngle = 359;
 		}
 		checkPlayerInput();
-		updatePlayerVerticalPosition();
+		updatePlayerVerticalPosition(dt);
 		if (collisionOn) {
 			checkVerticalCollision();
 		}
-		updatePlayerHorizontalPosition();
+		updatePlayerHorizontalPosition(dt);
 		if (collisionOn) {
 			checkHorizontalCollision();
 		}
@@ -167,35 +188,45 @@ public class Player extends Entity {
 	
 	public void checkOtherGameObjectCollision(GameObject block, Iterator<GameObject> iter) {
 		if (block instanceof KeyObject) {
-			System.out.println("Key picked up");
+			// play sound
 			gp.playSFX("pickupCoin.wav");
+			
+			// show text "Key picked up" and delete after 1s
+			GUI gui = new GUI(worldX, worldY, "Key picked up");
+			gp.GUIList.add(gui);
+			timer.schedule(new DeleteGUI(gui), 1000); // 1000 milliseconds
+			
+			// increment hasKey and remove block from gp.gameObjects
 			hasKey++;
 			iter.remove();
 		} else if (block instanceof DoorObject) {
 			if (hasKey > 0) {
-				System.out.println("Door opened");
 				gp.playSFX("doorOpened.wav");
 				hasKey--;
 				iter.remove();
 			}
 		} else if (block instanceof BootsObject) {
-			System.out.println("Boots picked up");
 			gp.playSFX("powerUp.wav");
 			speed += 2;
+			
+			GUI gui = new GUI(worldX, worldY, "+Speed");
+			gp.GUIList.add(gui);
+			timer.schedule(new DeleteGUI(gui), 1000); // 1000 milliseconds
+			
 			iter.remove();
 		}
 	}
 	
-	public void updatePlayerHorizontalPosition() {
+	public void updatePlayerHorizontalPosition(double dt) {
 //		if (keyHandler.upPressed) worldX += velocity.x;
 //		else if (keyHandler.downPressed) worldX -= velocity.x;
-		worldX += velocity.x;
+		worldX += velocity.x * dt;
 	}
 	
-	public void updatePlayerVerticalPosition() {
+	public void updatePlayerVerticalPosition(double dt) {
 //		if (keyHandler.upPressed) worldY += velocity.y;
 //		else if (keyHandler.downPressed) worldY -= velocity.y;
-		worldY += velocity.y;
+		worldY += velocity.y * dt;
 	}
 	
 	public void alternateSprite() {

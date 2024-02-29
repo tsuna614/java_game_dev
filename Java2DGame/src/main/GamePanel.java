@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import HUD.GUI;
+import HUD.HUD;
 import entity.CollisionBlock;
 import entity.Player;
 import objects.BootsObject;
@@ -31,7 +33,7 @@ public class GamePanel extends JPanel implements Runnable {
 	public final int screenWidth = maxScreenCol * tileSize; // 768 pixels
 	public final int screenHeight = maxScreenRow * tileSize; // 576 pixels
 	
-	int camX, camY;
+	public float camX, camY;
 	
 	// WORLD SETTINGS
 	public final int maxWorldCol = 50;
@@ -55,6 +57,10 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	// SOUND
 	Sound sound = new Sound();
+	
+	// HUD
+	public HUD hud = new HUD(this);
+	public ArrayList<GUI> GUIList = new ArrayList<>();
 	
 	
 	public GamePanel() {
@@ -166,16 +172,20 @@ public class GamePanel extends JPanel implements Runnable {
 			lastTime = currentTime;
 			
 			if (delta >= 1) {
-				update();
+				update(delta);
 				repaint();
 				delta--;
 			}
 		}
 	}
 	
-	public void update() {
+	public void update(double dt) {
 		
-		player.update();
+		player.update(dt);
+		
+		for (GUI object : GUIList) {
+			object.update(dt);
+		}
 		
 	}
 	
@@ -184,7 +194,10 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		Graphics2D g2 = (Graphics2D)g; // change Graphics to Graphics2D
 		
-		g2.translate(- (player.worldX - screenWidth / 2), - (player.worldY - screenHeight / 2));
+		camX = (player.worldX - screenWidth / 2);
+		camY = (player.worldY - screenHeight / 2);
+		
+		g2.translate(-camX, -camY);
 		// wny we have to put minus in front? i have no god damn idea
 		
 //		tileManager.draw(g2);
@@ -212,6 +225,12 @@ public class GamePanel extends JPanel implements Runnable {
 		}
 		
 		player.draw(g2);
+		
+		hud.draw(g2);
+		
+		for (GUI object : GUIList) {
+			object.draw(g2);
+		}
 		
 		g2.dispose();
 	}
