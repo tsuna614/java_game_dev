@@ -1,4 +1,4 @@
-package tile;
+package utils;
 
 import java.awt.image.BufferedImage;
 

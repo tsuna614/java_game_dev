@@ -18,7 +18,7 @@ import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
-import tile.TileManager;
+import utils.TileManager;
 
 // implements Runnable is for the gameThread
 public class GamePanel extends JPanel implements Runnable {
@@ -36,8 +36,8 @@ public class GamePanel extends JPanel implements Runnable {
 	public float camX, camY;
 	
 	// WORLD SETTINGS
-	public final int maxWorldCol = 50;
-	public final int maxWorldRow = 50;
+	public final int maxWorldCol = 43;
+	public final int maxWorldRow = 41;
 	public final int worldWidth = maxWorldCol * tileSize;
 	public final int worldHeight = maxWorldRow * tileSize;
 	
@@ -71,7 +71,7 @@ public class GamePanel extends JPanel implements Runnable {
 		this.addKeyListener(keyHandler);
 		this.setFocusable(true); // with this, this GamePanel can be 'focused' to receive key input
 		
-		tileManager.loadMap("map02.txt");
+		tileManager.loadMap("map03.txt");
 		
 		
 		playMusic("BlueBoyAdventure.wav");
@@ -149,10 +149,10 @@ public class GamePanel extends JPanel implements Runnable {
 		final float playerWidth = player.hitbox.width;
 		final float playerHeight = player.hitbox.height;
 		
-		return playerX < block.x + tileSize &&
-				playerX + playerWidth > block.x &&
-				playerY < block.y + tileSize &&
-				playerY + playerHeight > block.y;
+		return playerX < block.getPosition().x + tileSize &&
+				playerX + playerWidth > block.getPosition().x &&
+				playerY < block.getPosition().y + tileSize &&
+				playerY + playerHeight > block.getPosition().y;
 	}
 	
 	@Override
@@ -183,6 +183,12 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		player.update(dt);
 		
+//		for (GameObject object : gameObjects) {
+//			if (object instanceof KeyObject) {
+//				object.update();
+//			}
+//		}
+		
 		for (GUI object : GUIList) {
 			object.update(dt);
 		}
@@ -198,13 +204,14 @@ public class GamePanel extends JPanel implements Runnable {
 		camY = (player.worldY - screenHeight / 2);
 		
 		g2.translate(-camX, -camY);
-		// wny we have to put minus in front? i have no god damn idea
 		
-//		tileManager.draw(g2);
-		
-//		for (final CollisionBlock block : collisionBlocks) {
-//			block.draw(g2);
-//		}
+		g2.setColor(Color.decode("#0090e6"));
+		g2.fillRect((int) camX, (int) camY, screenWidth, screenHeight);
+
+		long drawStart = 0;
+		if (keyHandler.TPressed) {
+			drawStart = System.nanoTime();
+		}
 		
 		for (GameObject object : gameObjects) {
 			if (object instanceof KeyObject) {
@@ -214,14 +221,8 @@ public class GamePanel extends JPanel implements Runnable {
 			} else if (object instanceof BootsObject) {
 				object.draw(g2);
 			} else {
-				tileManager.drawSingle(g2, object.x, object.y);
+				tileManager.drawSingle(g2, (int) object.getPosition().x, (int) object.getPosition().y);
 			}
-			
-//			else {
-//				g2.setColor(Color.white);
-//				
-//				g2.fillRect(object.x, object.y, 16 * 3, 16 * 3);
-//			}
 		}
 		
 		player.draw(g2);
@@ -230,6 +231,14 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		for (GUI object : GUIList) {
 			object.draw(g2);
+		}
+		
+		if (keyHandler.TPressed) {
+			long drawEnd = System.nanoTime();
+			long timePassed = drawEnd - drawStart;
+			System.out.println(timePassed);
+			g2.setColor(Color.white);
+			g2.drawString("Draw time: " + timePassed , camX + 20, camY + 200);
 		}
 		
 		g2.dispose();

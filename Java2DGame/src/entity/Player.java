@@ -18,6 +18,7 @@ import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
+import utils.Vector2;
  
 public class Player extends Entity {
 	
@@ -70,8 +71,8 @@ public class Player extends Entity {
 	public void setDefaultValues() {
 //		worldX = 0;
 //		worldY = 0;
-		worldX = gp.tileSize * 23;
-		worldY = gp.tileSize * 21;
+		worldX = gp.tileSize * 2;
+		worldY = gp.tileSize * 2;
 		direction = "down";
 		collisionOn = true;
 	}
@@ -150,16 +151,23 @@ public class Player extends Entity {
 				if (block.isBlocking) {
 					if (velocity.x < 0) {
 						velocity.x = 0;
-						this.worldX = block.x + gp.tileSize - hitbox.x;
+						this.worldX = block.getPosition().x + gp.tileSize - hitbox.x;
 					}
 					else if (velocity.x > 0) {
 						velocity.x = 0;
-						this.worldX = block.x - gp.tileSize + hitbox.x;
+						this.worldX = block.getPosition().x - gp.tileSize + hitbox.x;
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
 			}
-			
+		}
+		
+		// check collision with world bounder
+		if (this.worldX < 0 && velocity.x < 0) {
+			velocity.x = 0;
+			this.worldX = 0 - hitbox.x;
+		} else if (this.worldX + gp.tileSize - hitbox.x > gp.worldWidth && velocity.x > 0) {
+			this.worldX = gp.worldWidth - gp.tileSize + hitbox.x;
 		}
 	}
 	
@@ -173,16 +181,24 @@ public class Player extends Entity {
 				if (block.isBlocking) {
 					if (velocity.y < 0) {
 						velocity.y = 0;
-						this.worldY = block.y + gp.tileSize - hitbox.y;
+						this.worldY = block.getPosition().x + gp.tileSize - hitbox.y;
 					}
 					else if (velocity.y > 0) {
 						velocity.y = 0;
-						this.worldY = block.y - gp.tileSize;
+						this.worldY = block.getPosition().x - gp.tileSize;
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
 			}
 			
+		}
+		
+		if (this.worldY + hitbox.y < 0 && velocity.y < 0) {
+			velocity.y = 0;
+			worldY = 0 - hitbox.y;
+		} else if (worldY + gp.tileSize > gp.worldHeight && velocity.y > 0) {
+			velocity.y = 0;
+			worldY = gp.worldHeight - gp.tileSize;
 		}
 	}
 	

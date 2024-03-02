@@ -4,6 +4,8 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Vector;
 
+import utils.Vector2;
+
 public class Entity {
 
 	public float worldX, worldY;
