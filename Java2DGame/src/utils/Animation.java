@@ -2,6 +2,7 @@ package utils;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Animation {
 
@@ -14,28 +15,31 @@ public class Animation {
     private boolean isStopped;
     private boolean isLoop = true;
     
-    private static ArrayList<Frame> frames = new ArrayList<>();
+    private Frame[] frames;
+//    private static ArrayList<Frame> frames = new ArrayList<>();
     
     public Animation(BufferedImage[] sprites, int delayDuration) {
+    	frames = new Frame[sprites.length];
+    	
     	frameCount = 0;
     	frameDelay = delayDuration;
     	currentFrame = 0;
     	animationDirection = 1;
     	totalFrames = sprites.length;
-    	
     	for (int i=0; i<sprites.length; i++) {
-    		addFrame(sprites[i], delayDuration);
+//    		addFrame(sprites[i], delayDuration);
+    		frames[i] = new Frame(sprites[i], delayDuration);
     	}
     	isStopped = false;
     }
     
     
-    private static void addFrame(BufferedImage frame, int duration) {
-    	frames.add(new Frame(frame, duration));
-    }
+//    private static void addFrame(BufferedImage frame, int duration) {
+//    	frames.add(new Frame(frame, duration));
+//    }
     
     public void start() {
-    	if (frames.size() == 0) {
+    	if (frames.length == 0) {
     		return;
     	}
     	
@@ -43,7 +47,7 @@ public class Animation {
     }
     
     public void stop() {
-    	if (frames.size() == 0) {
+    	if (frames.length == 0) {
     		return;
     	}
     	
@@ -51,7 +55,7 @@ public class Animation {
     }
     
     public void reset() {
-    	if (frames.size() == 0) {
+    	if (frames.length == 0) {
     		return;
     	}
     	
@@ -60,7 +64,7 @@ public class Animation {
     }
     
     public BufferedImage getCurrentFrame() {
-    	return frames.get(currentFrame).getFrame();
+    	return frames[currentFrame].getFrame();
     }
     
     public void update() {
@@ -68,8 +72,7 @@ public class Animation {
     		frameCount++;
     		if (frameCount > frameDelay) {
     			frameCount = 0;
-    			currentFrame += animationDirection;
-    					
+    			currentFrame += animationDirection; 					
     			if (currentFrame > totalFrames - 1) {
     				currentFrame = 0;
     			} else if (currentFrame < 0) {

@@ -12,8 +12,8 @@ import utils.Sprite;
 import utils.Vector2;
 
 public class GameObject {
-	private float x;
-	private float y;
+	protected float x;
+	protected float y;
 	
 	private float width = 0;
 	private float height = 0;
@@ -28,16 +28,30 @@ public class GameObject {
 //	private BufferedImage[] testAnimation = {Sprite.getSprite(0, 0), Sprite.getSprite(0, 1), Sprite.getSprite(0, 2) };
 //	public Animation animation = new Animation(testAnimation, 10);
 	
-	public GameObject(int x, int y) {
+	
+	
+////////////////// CONSTRUCTOR /////////////////////
+	public GameObject(float x, float y) {
 		this.x = x;
 		this.y = y;
+		
+		this.height = 16 * 3;
+		this.width = 16 * 3;
 	}
 	
+	////////////////// OBJECT ATTRIBUTES /////////////////////
 	public Vector2 getPosition() {
 		return new Vector2(this.x, this.y);
 	}
 	
-	////////////////// GET WIDTH AND HEIGHT /////////////////////
+	public void setX(float x) {
+		this.x = x;
+	}
+	
+	public void setY(float y) {
+		this.y = y;
+	}
+	
 	public float getWidth() {
 		return width;
 	}
@@ -63,6 +77,6 @@ public class GameObject {
 	}
 	
 	public void draw(Graphics2D g2) {
-		g2.drawImage(sprite, (int) x, (int) y, gp.tileSize, gp.tileSize, null);
+		g2.drawImage(sprite, (int) x, (int) y, (int) width, (int) height, null);
 	}
 }

@@ -8,6 +8,9 @@ public class DoorObject extends GameObject {
 		super(x, y);
 		this.gp = gp;
 		
+		this.setWidth(gp.tileSize);
+		this.setHeight(gp.tileSize);
+		
 		getObjectImage("door.png");
 	}
 }

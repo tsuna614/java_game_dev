@@ -20,8 +20,11 @@ public class Sprite {
 	}
 	
 	public static BufferedImage getSprite(int xGrid, int yGrid) {
+		// default
 		if (sprite == null) {
-			loadSprite("res/tiles/Grass (48x48).png");
+			loadSprite("res/player/player.png");
+//			loadSprite("res/tiles/Grass (48x48).png");
+			
 		}
 		return sprite.getSubimage(xGrid * TILE_SIZE, yGrid * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 	}

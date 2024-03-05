@@ -18,6 +18,8 @@ import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
+import objects.TreeObject;
+import utils.ObjectManager;
 import utils.TileManager;
 
 // implements Runnable is for the gameThread
@@ -28,7 +30,7 @@ public class GamePanel extends JPanel implements Runnable {
 	final int scale = 3; // scale up the sprite or else 16x16 is going to be very small
 	
 	public final int tileSize = originalTileSize * scale;
-	public final int maxScreenCol = 16;
+	public final int maxScreenCol = 20;
 	public final int maxScreenRow = 12;
 	public final int screenWidth = maxScreenCol * tileSize; // 768 pixels
 	public final int screenHeight = maxScreenRow * tileSize; // 576 pixels
@@ -47,7 +49,7 @@ public class GamePanel extends JPanel implements Runnable {
 	Thread gameThread;
 	
 	// PLAYER
-	public Player player = new Player(this, keyHandler);
+	public Player player = new Player(100, 100 , this, keyHandler);
 	
 	// DRAW TILES AND SET INVISIBLE WALLS
 	TileManager tileManager = new TileManager(this);
@@ -57,6 +59,8 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	// SOUND
 	Sound sound = new Sound();
+	boolean playMusic = true;
+	boolean playSFX = true;
 	
 	// HUD
 	public HUD hud = new HUD(this);
@@ -73,22 +77,10 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		tileManager.loadMap("map03.txt");
 		
-		
 		playMusic("BlueBoyAdventure.wav");
 		
-		KeyObject key = new KeyObject(1000, 1000, this);
-		KeyObject key2 = new KeyObject(1400, 1000, this);
-		KeyObject key3 = new KeyObject(1200, 1000, this);
-		DoorObject door = new DoorObject(tileSize * 10, tileSize * 11, this);
-		DoorObject door2 = new DoorObject(tileSize * 12, tileSize * 23, this);
-		BootsObject boot = new BootsObject(tileSize * 23, tileSize * 39, this);
-		
-		gameObjects.add(key);
-		gameObjects.add(key2);
-		gameObjects.add(key3);
-		gameObjects.add(door);
-		gameObjects.add(door2);
-		gameObjects.add(boot);
+		ObjectManager.loadGamePanel(this);
+		ObjectManager.addObjects();
 	}
 	
 	public void addGameObject(GameObject object) {
@@ -106,52 +98,16 @@ public class GamePanel extends JPanel implements Runnable {
 		gameThread = new Thread(this);
 		gameThread.start();
 	}
-
-//	@Override
-//	public void run() {
-//		
-//		double drawInterval = 1000000000/FPS; // 0.01666 seconds
-//		double nextDrawTime = System.nanoTime() + drawInterval;
-//		
-//		
-//		while (gameThread != null) {
-//			// System.out.println("The game loop is running");
-//			
-//			// 1. UPDATE: update informations such as player's position
-//			update();
-//			
-//			// 2. DRAW: re-draw the screen with the updated information
-//			repaint(); // this somehow calls to the paintComponent method
-//			
-//			
-//			try {
-//				double remainingTime = nextDrawTime - System.nanoTime();
-//				remainingTime /= 1000000; // change from nanosecond to millisecond
-//				
-//				if (remainingTime < 0) {
-//					remainingTime = 0;
-//				}
-//				
-//				Thread.sleep((long) remainingTime);
-//				
-//				nextDrawTime += drawInterval;
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-//		
-//	}
 	
 	public boolean checkCollision(Player player, GameObject block) {
-		final float playerX = player.worldX + player.hitbox.x;
-		final float playerY = player.worldY + player.hitbox.y;
-		final float playerWidth = player.hitbox.width;
-		final float playerHeight = player.hitbox.height;
+		final float playerX = player.getPosition().x + player.getHitbox().x;
+		final float playerY = player.getPosition().y + player.getHitbox().y;
+		final float playerWidth = player.getHitbox().width;
+		final float playerHeight = player.getHitbox().height;
 		
-		return playerX < block.getPosition().x + tileSize &&
+		return playerX < block.getPosition().x + block.getWidth() &&
 				playerX + playerWidth > block.getPosition().x &&
-				playerY < block.getPosition().y + tileSize &&
+				playerY < block.getPosition().y + block.getHeight() &&
 				playerY + playerHeight > block.getPosition().y;
 	}
 	
@@ -171,17 +127,25 @@ public class GamePanel extends JPanel implements Runnable {
 			
 			lastTime = currentTime;
 			
+			// máy mạnh -> hàm này được thực hiện nhiều lần -> update được gọi nhiều
+			// máy yếu -> (currentTime - lastTime) lớn -> delta tăng nhanh hơn mỗi lần gọi -> update được gọi nhiều
+			// ==> số lần gọi update() giữa máy mạnh và máy yếu như nhau, không cần phải truyền dt vào object nữa
+			
+			// TUY NHIÊN, nếu muốn chính xác đến từng số thập phần (tốc độ bằng nhau giữa máy mạnh và yếu)
+			// người ta sẽ truyền delta time vào object
 			if (delta >= 1) {
-				update(delta);
+				update();
 				repaint();
 				delta--;
 			}
 		}
 	}
 	
-	public void update(double dt) {
+	public void update() {
 		
-		player.update(dt);
+		// không cần phải truyền delta time vào
+		
+		player.update();
 		
 //		for (GameObject object : gameObjects) {
 //			if (object instanceof KeyObject) {
@@ -190,7 +154,7 @@ public class GamePanel extends JPanel implements Runnable {
 //		}
 		
 		for (GUI object : GUIList) {
-			object.update(dt);
+			object.update();
 		}
 		
 	}
@@ -200,18 +164,30 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		Graphics2D g2 = (Graphics2D)g; // change Graphics to Graphics2D
 		
-		camX = (player.worldX - screenWidth / 2);
-		camY = (player.worldY - screenHeight / 2);
+		camX = (player.getPosition().x - screenWidth / 2);
+		camY = (player.getPosition().y - screenHeight / 2);
 		
 		g2.translate(-camX, -camY);
 		
+		// drawing the blue "ocean" background
 		g2.setColor(Color.decode("#0090e6"));
 		g2.fillRect((int) camX, (int) camY, screenWidth, screenHeight);
-
-		long drawStart = 0;
-		if (keyHandler.TPressed) {
-			drawStart = System.nanoTime();
+		
+		drawingObjects(g2);
+		
+		hud.draw(g2);
+		
+		for (GUI object : GUIList) {
+			object.draw(g2);
 		}
+		
+		g2.dispose();
+	}
+	
+	public void drawingObjects(Graphics2D g2) {
+
+		
+		ArrayList<GameObject> priorityObjects = new ArrayList<>();
 		
 		for (GameObject object : gameObjects) {
 			if (object instanceof KeyObject) {
@@ -220,31 +196,29 @@ public class GamePanel extends JPanel implements Runnable {
 				object.draw(g2);
 			} else if (object instanceof BootsObject) {
 				object.draw(g2);
-			} else {
+			} else if (object instanceof TreeObject) {
+				if (player.getPosition().y < object.getPosition().y) {
+					priorityObjects.add(object);					
+				} else {
+					object.draw(g2);
+				}
+			}
+				else {
 				tileManager.drawSingle(g2, (int) object.getPosition().x, (int) object.getPosition().y);
 			}
 		}
 		
 		player.draw(g2);
 		
-		hud.draw(g2);
-		
-		for (GUI object : GUIList) {
-			object.draw(g2);
+		for (GameObject object : priorityObjects) {
+			if (object instanceof TreeObject) {
+				object.draw(g2);
+			}
 		}
-		
-		if (keyHandler.TPressed) {
-			long drawEnd = System.nanoTime();
-			long timePassed = drawEnd - drawStart;
-			System.out.println(timePassed);
-			g2.setColor(Color.white);
-			g2.drawString("Draw time: " + timePassed , camX + 20, camY + 200);
-		}
-		
-		g2.dispose();
 	}
 	
 	public void playMusic(String fileName) {
+		if (!playMusic) return;
 		sound.setFile(fileName);
 		sound.play();
 		sound.loop();
@@ -255,6 +229,7 @@ public class GamePanel extends JPanel implements Runnable {
 	}
 	
 	public void playSFX(String fileName) {
+		if (!playSFX) return;
 		sound.setFile(fileName);
 		sound.setVolume(0.2f);
 		sound.play();

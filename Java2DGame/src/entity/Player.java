@@ -18,18 +18,34 @@ import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
+import utils.Animation;
+import utils.Sprite;
 import utils.Vector2;
  
-public class Player extends Entity {
+public class Player extends GameObject {
 	
 	GamePanel gp;
 	KeyHandler keyHandler;
 	
-	float speed = 4;
+	enum PlayerState {
+		idle,
+		walking,
+	}
 	
+	float speed = 4;
+	float rotationAngle = 0;
+	Rectangle hitbox;
+	Vector2 velocity;
+	float ay = (float) 5;
+	public String direction;
+	PlayerState playerState;
 	public int hasKey = 0;
 	
-	float rotationAngle = 0;
+	boolean isUpLeftRecently = false;
+	boolean isUpRightRecently = false;
+	boolean isDownLeftRecently = false;
+	boolean isDownRightRecently = false;
+	
 	
 	// SET TIMER FUNCTION TO DELETE GUI TEXT AFTER 1 SECOND
 	Timer timer = new Timer();
@@ -47,88 +63,192 @@ public class Player extends Entity {
 	    	gp.GUIList.remove(gui);
 	    }
 	}
+	class DirectionTimer extends TimerTask {
+		private final String direction;
+		Player player;
+		DirectionTimer(Player player, String direction) {
+			this.direction = direction;
+			this.player = player;
+		}
+		
+		public void run() {
+			if (direction == "upleft") {
+				player.isUpLeftRecently = false;
+			} else if (direction == "upright") {
+				player.isUpRightRecently = false;
+			} else if (direction == "downleft") {
+				player.isDownLeftRecently = false;
+			} else if (direction == "downright") {
+				player.isDownRightRecently = false;
+			}
+	    }
+	}
 	
-//	public final int screenX;
-//	public final int screenY; // these indicate where we draw the player on the screen
+	// ANIMATIONS
+	private Animation walkLeft;
+	private Animation walkRight;
+	private Animation walkUp;
+	private Animation walkDown;
+	private Animation walkUpLeft;
+	private Animation walkUpRight;
+	private Animation walkDownLeft;
+	private Animation walkDownRight;
+	private Animation currentAnimation;
 	
-	public Player(GamePanel gp, KeyHandler keyH) {
+	
+	public Player(float x, float y, GamePanel gp, KeyHandler keyH) {
+		super(x, y);
 		this.gp = gp;
 		this.keyHandler = keyH;
 		
-//		screenX = gp.screenWidth / 2 - (gp.tileSize/2);
-//		screenY = gp.screenHeight / 2 - (gp.tileSize/2);
-		// we have to minus half the length of the player's tileSize so that the player
-		// is positioned exactly at the center
+		this.setWidth(gp.tileSize);
+		this.setHeight(gp.tileSize);
 		
-		hitbox = new Rectangle(8, 16, 32, 32);
+		hitbox = new Rectangle(8, 16, gp.tileSize - 8 * 2, gp.tileSize - 16);
 		
 		velocity = new Vector2(0,0);
 		
 		setDefaultValues();
-		getPlayerImage();
+		loadPlayerAnimation();
+	}
+	
+	public Rectangle getHitbox() {
+		return this.hitbox;
 	}
 	
 	public void setDefaultValues() {
 //		worldX = 0;
 //		worldY = 0;
-		worldX = gp.tileSize * 2;
-		worldY = gp.tileSize * 2;
 		direction = "down";
-		collisionOn = true;
+		playerState = PlayerState.idle;
 	}
 	
-	public void getPlayerImage() {
-		try {
-			up1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_up_1.png"));
-			up2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_up_2.png"));
-			down1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_down_1.png"));
-			down2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_down_2.png"));
-			left1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_left_1.png"));
-			left2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_left_2.png"));
-			right1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_right_1.png"));
-			right2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_right_2.png"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void loadPlayerAnimation() {
+		Sprite.loadSprite("res/player/player.png");
+		final BufferedImage[] walkingLeft = {Sprite.getSprite(0, 2), Sprite.getSprite(1, 2), Sprite.getSprite(2, 2), Sprite.getSprite(3, 2)};
+		final BufferedImage[] walkingRight = {Sprite.getSprite(0, 6), Sprite.getSprite(1, 6), Sprite.getSprite(2, 6), Sprite.getSprite(3, 6)};
+		final BufferedImage[] walkingUp = {Sprite.getSprite(0, 4), Sprite.getSprite(1, 4), Sprite.getSprite(2, 4), Sprite.getSprite(3, 4)};
+		final BufferedImage[] walkingDown = {Sprite.getSprite(0, 0), Sprite.getSprite(1, 0), Sprite.getSprite(2, 0), Sprite.getSprite(3, 0)};
+		final BufferedImage[] walkingUpLeft = {Sprite.getSprite(0, 3), Sprite.getSprite(1, 3), Sprite.getSprite(2, 3), Sprite.getSprite(3, 3)};
+		final BufferedImage[] walkingUpRight = {Sprite.getSprite(0, 5), Sprite.getSprite(1, 5), Sprite.getSprite(2, 5), Sprite.getSprite(3, 5)};
+		final BufferedImage[] walkingDownLeft = {Sprite.getSprite(0, 1), Sprite.getSprite(1, 1), Sprite.getSprite(2, 1), Sprite.getSprite(3, 1)};
+		final BufferedImage[] walkingDownRight = {Sprite.getSprite(0, 7), Sprite.getSprite(1, 7), Sprite.getSprite(2, 7), Sprite.getSprite(3, 7)};
+
+		walkDown = new Animation(walkingDown, 10);
+		walkLeft = new Animation(walkingLeft, 10);
+		walkRight = new Animation(walkingRight, 10);
+		walkUp = new Animation(walkingUp, 10);
+		walkUpLeft = new Animation(walkingUpLeft, 10);
+		walkUpRight = new Animation(walkingUpRight, 10);
+		walkDownLeft = new Animation(walkingDownLeft, 10);
+		walkDownRight = new Animation(walkingDownRight, 10);
 	}
 	
-	public void update(double dt) {
-		if (rotationAngle > 360) {
-			rotationAngle = 1;
-		} else if (rotationAngle < 0) {
-			rotationAngle = 359;
-		}
+	public void update() {
+//		if (rotationAngle > 360) {
+//			rotationAngle = 1;
+//		} else if (rotationAngle < 0) {
+//			rotationAngle = 359;
+//		}
+		updatePlayerAnimation();
 		checkPlayerInput();
-		updatePlayerVerticalPosition(dt);
-		if (collisionOn) {
-			checkVerticalCollision();
+//		applyGravity(dt);
+		updatePlayerVerticalPosition();
+		checkVerticalCollision();
+		updatePlayerHorizontalPosition();
+		checkHorizontalCollision();
+	}
+	
+	public void updatePlayerAnimation() {
+		switch (direction) {
+		case "up":
+			currentAnimation = walkUp;
+			break;
+		case "down":
+			currentAnimation = walkDown;
+			break;
+		case "left":
+			currentAnimation = walkLeft;
+			break;
+		case "right":
+			currentAnimation = walkRight;
+			break;
+		case "upleft":
+			currentAnimation = walkUpLeft;
+			break;
+		case "upright":
+			currentAnimation = walkUpRight;
+			break;
+		case "downleft":
+			currentAnimation = walkDownLeft;
+			break;
+		case "downright":
+			currentAnimation = walkDownRight;
+			break;
+		default:
+			break;
 		}
-		updatePlayerHorizontalPosition(dt);
-		if (collisionOn) {
-			checkHorizontalCollision();
+		
+		if (playerState == PlayerState.idle) {
+			currentAnimation.reset();
+			currentAnimation.stop();
+		} else if(playerState == PlayerState.walking) {
+			currentAnimation.start();
 		}
-		alternateSprite();
+		
+		currentAnimation.update();
 	}
 	
 	public void checkPlayerInput() {
 		velocity.x = 0;
 		velocity.y = 0;
 		
+		playerState = PlayerState.walking;
 		if (keyHandler.upPressed) {
-			direction = "up";
+			if (!isUpLeftRecently && !isUpRightRecently) {				
+				direction = "up";
+			}
 			velocity.y -= speed;
 		}
 		if (keyHandler.downPressed) {
-			direction = "down";
+			if (!isDownLeftRecently && !isDownRightRecently) {
+				direction = "down";				
+			}
 			velocity.y += speed;
 		}
 		if (keyHandler.leftPressed) {
-			direction = "left";
+			if (!isUpLeftRecently && !isDownLeftRecently)  {
+				direction = "left";				
+			}
 			velocity.x -= speed;
 		}
 		if (keyHandler.rightPressed) {
-			direction = "right";
+			if (!isUpRightRecently && !isDownRightRecently) {
+				direction = "right";				
+			}
 			velocity.x += speed;
+		}
+		
+		if (keyHandler.upPressed && keyHandler.leftPressed) {
+			isUpLeftRecently = true;
+			direction = "upleft";
+			timer.schedule(new DirectionTimer(this, direction), 400);
+		} else if (keyHandler.upPressed && keyHandler.rightPressed) {
+			isUpRightRecently = true;
+			direction = "upright";
+			timer.schedule(new DirectionTimer(this, direction), 400);
+		} else if (keyHandler.downPressed && keyHandler.leftPressed) {
+			isDownLeftRecently = true;
+			direction = "downleft";
+			timer.schedule(new DirectionTimer(this, direction), 400);
+		} else if (keyHandler.downPressed && keyHandler.rightPressed) {
+			isDownRightRecently = true;
+			direction = "downright";
+			timer.schedule(new DirectionTimer(this, direction), 400);
+		}
+		
+		if (velocity.x == 0 && velocity.y == 0) {
+			playerState = PlayerState.idle;
 		}
 		
 		
@@ -151,11 +271,13 @@ public class Player extends Entity {
 				if (block.isBlocking) {
 					if (velocity.x < 0) {
 						velocity.x = 0;
-						this.worldX = block.getPosition().x + gp.tileSize - hitbox.x;
+						this.x = block.getPosition().x + block.getWidth() - hitbox.x;
+//						this.worldX = block.getPosition().x + gp.tileSize - hitbox.x;
 					}
 					else if (velocity.x > 0) {
 						velocity.x = 0;
-						this.worldX = block.getPosition().x - gp.tileSize + hitbox.x;
+						this.x = block.getPosition().x - this.getWidth() + hitbox.x;
+//						this.worldX = block.getPosition().x - gp.tileSize + hitbox.x;
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
@@ -163,11 +285,11 @@ public class Player extends Entity {
 		}
 		
 		// check collision with world bounder
-		if (this.worldX < 0 && velocity.x < 0) {
+		if (this.x < 0 && velocity.x < 0) {
 			velocity.x = 0;
-			this.worldX = 0 - hitbox.x;
-		} else if (this.worldX + gp.tileSize - hitbox.x > gp.worldWidth && velocity.x > 0) {
-			this.worldX = gp.worldWidth - gp.tileSize + hitbox.x;
+			this.x = -hitbox.x;
+		} else if (this.x + gp.tileSize - hitbox.x > gp.worldWidth && velocity.x > 0) {
+			this.x = gp.worldWidth - gp.tileSize + hitbox.x;
 		}
 	}
 	
@@ -181,11 +303,11 @@ public class Player extends Entity {
 				if (block.isBlocking) {
 					if (velocity.y < 0) {
 						velocity.y = 0;
-						this.worldY = block.getPosition().x + gp.tileSize - hitbox.y;
+						this.y = block.getPosition().y + block.getHeight() - hitbox.y;
 					}
 					else if (velocity.y > 0) {
 						velocity.y = 0;
-						this.worldY = block.getPosition().x - gp.tileSize;
+						this.y = block.getPosition().y - this.getHeight();
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
@@ -193,12 +315,12 @@ public class Player extends Entity {
 			
 		}
 		
-		if (this.worldY + hitbox.y < 0 && velocity.y < 0) {
+		if (this.y + hitbox.y < 0 && velocity.y < 0) {
 			velocity.y = 0;
-			worldY = 0 - hitbox.y;
-		} else if (worldY + gp.tileSize > gp.worldHeight && velocity.y > 0) {
+			this.y = -hitbox.y;
+		} else if (this.y + gp.tileSize > gp.worldHeight && velocity.y > 0) {
 			velocity.y = 0;
-			worldY = gp.worldHeight - gp.tileSize;
+			this.y = gp.worldHeight - gp.tileSize;
 		}
 	}
 	
@@ -208,7 +330,7 @@ public class Player extends Entity {
 			gp.playSFX("pickupCoin.wav");
 			
 			// show text "Key picked up" and delete after 1s
-			GUI gui = new GUI(worldX, worldY, "Key picked up");
+			GUI gui = new GUI(this.x, this.y, "Key picked up");
 			gp.GUIList.add(gui);
 			timer.schedule(new DeleteGUI(gui), 1000); // 1000 milliseconds
 			
@@ -225,7 +347,7 @@ public class Player extends Entity {
 			gp.playSFX("powerUp.wav");
 			speed += 2;
 			
-			GUI gui = new GUI(worldX, worldY, "+Speed");
+			GUI gui = new GUI(this.x, this.y, "+Speed");
 			gp.GUIList.add(gui);
 			timer.schedule(new DeleteGUI(gui), 1000); // 1000 milliseconds
 			
@@ -233,75 +355,36 @@ public class Player extends Entity {
 		}
 	}
 	
-	public void updatePlayerHorizontalPosition(double dt) {
-//		if (keyHandler.upPressed) worldX += velocity.x;
-//		else if (keyHandler.downPressed) worldX -= velocity.x;
-		worldX += velocity.x * dt;
-	}
-	
-	public void updatePlayerVerticalPosition(double dt) {
-//		if (keyHandler.upPressed) worldY += velocity.y;
-//		else if (keyHandler.downPressed) worldY -= velocity.y;
-		worldY += velocity.y * dt;
-	}
-	
-	public void alternateSprite() {
-		// this is to alternate between 2 sprites to make an animation
-		// as you can tell, it only work if it has only 2 different sprites, so it kinda sucks
-		if (!keyHandler.upPressed && !keyHandler.downPressed && !keyHandler.leftPressed && !keyHandler.rightPressed)
-			return;
-		spriteCounter++;
-		if (spriteCounter > 10) {
-			if (spriteNum == 1)
-				spriteNum = 2;
-			else spriteNum = 1;
-			
-			spriteCounter = 0;
+	public void applyGravity(double dt) {
+//		System.out.println(dt);
+		velocity.y += ay * (dt - 1);
+		if (velocity.y > 30) {
+			velocity.y = 30;
 		}
 	}
 	
+	public void updatePlayerHorizontalPosition() {
+//		if (keyHandler.upPressed) worldX += velocity.x;
+//		else if (keyHandler.downPressed) worldX -= velocity.x;
+		
+		this.x += velocity.x;
+	}
+	
+	public void updatePlayerVerticalPosition() {
+//		if (keyHandler.upPressed) worldY += velocity.y;
+//		else if (keyHandler.downPressed) worldY -= velocity.y;
+		this.y += velocity.y;
+	}
+	
+	@Override
 	public void draw(Graphics2D g2) {
 //		g2.setColor(Color.white);
 //		g2.fillRect(x, y, gp.tileSize, gp.tileSize);
 		
-		BufferedImage image = null;
-		
-		if (spriteNum == 1) {
-			switch(direction) {
-			case "up":
-				image = up1;
-				break;
-			case "down":
-				image = down1;
-				break;
-			case "left":
-				image = left1;
-				break;
-			case "right":
-				image = right1;
-				break;
-			default:
-			}
-		} else {
-			switch(direction) {
-			case "up":
-				image = up2;
-				break;
-			case "down":
-				image = down2;
-				break;
-			case "left":
-				image = left2;
-				break;
-			case "right":
-				image = right2;
-				break;
-			default:
-			}
-		}
 		
 //		g2.rotate(Math.toRadians(rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);
-		g2.drawImage(image, (int) worldX, (int) worldY, gp.tileSize, gp.tileSize, null);
+		
+		g2.drawImage(currentAnimation.getCurrentFrame(), (int) this.x, (int) this.y, gp.tileSize, gp.tileSize, null);
 //		g2.drawRect((int) worldX, (int) worldY, gp.tileSize, gp.tileSize);
 //		g2.rotate(Math.toRadians(-rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);
 	}

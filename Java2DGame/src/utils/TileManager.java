@@ -31,6 +31,21 @@ public class TileManager {
 	public final int GRASS_CORNER_BOTTOM_LEFT 	= 21;
 	public final int GRASS_CORNER_BOTTOM_RIGHT 	= 22;
 	public final int GRASS_CENTER_WITH_WEED 	= 23;
+	public final int WATER_CENTER				= 24;
+	
+	public final int SOIL_CENTER 				= 25;
+	public final int SOIL_CENTER_BOTTOM 		= 26;
+	public final int SOIL_CENTER_TOP 			= 27;
+	public final int SOIL_CENTER_RIGHT 			= 28;
+	public final int SOIL_CENTER_LEFT 			= 29;
+	public final int SOIL_TOP_LEFT 				= 30;
+	public final int SOIL_TOP_RIGHT 			= 31;
+	public final int SOIL_BOTTOM_LEFT 			= 32;
+	public final int SOIL_BOTTOM_RIGHT 			= 33;
+	public final int SOIL_CORNER_TOP_LEFT		= 34;
+	public final int SOIL_CORNER_TOP_RIGHT 		= 35;
+	public final int SOIL_CORNER_BOTTOM_LEFT 	= 36;
+	public final int SOIL_CORNER_BOTTOM_RIGHT 	= 37;
 	
 	
 	public final int TILE_SIZE = 16;
@@ -39,6 +54,7 @@ public class TileManager {
 	GamePanel gp;
 //	Tile[] tile;
 	BufferedImage grassSprite;
+	BufferedImage soilSprite;
 	BufferedImage[] sprites = new BufferedImage[100];
 	int mapTileNum[][];
 	
@@ -55,8 +71,9 @@ public class TileManager {
 	public void getTileImage() {
 		try {
 			grassSprite = ImageIO.read(new File("res/tiles/Grass (96x48).png"));
+			soilSprite = ImageIO.read(new File("res/tiles/soil.png"));		
 			
-			for (int i=0; i<= 23; i++) {
+			for (int i=10; i<= 37; i++) {
 				switch (i) {
 				case GRASS_TOP_LEFT:
 					sprites[i] = grassSprite.getSubimage(0 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -100,6 +117,49 @@ public class TileManager {
 				case GRASS_CENTER_WITH_WEED:
 					sprites[i] = grassSprite.getSubimage(5 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 					break;
+				case WATER_CENTER:
+					sprites[i] = grassSprite.getSubimage(5 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				
+				case SOIL_TOP_LEFT:
+					sprites[i] = soilSprite.getSubimage(0 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_TOP_RIGHT:
+					sprites[i] = soilSprite.getSubimage(2 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_BOTTOM_LEFT:
+					sprites[i] = soilSprite.getSubimage(0 * TILE_SIZE, 2 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_BOTTOM_RIGHT:
+					sprites[i] = soilSprite.getSubimage(2 * TILE_SIZE, 2 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CENTER:
+					sprites[i] = soilSprite.getSubimage(1 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CENTER_TOP:
+					sprites[i] = soilSprite.getSubimage(1 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CENTER_BOTTOM:
+					sprites[i] = soilSprite.getSubimage(1 * TILE_SIZE, 2 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CENTER_LEFT:
+					sprites[i] = soilSprite.getSubimage(0 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CENTER_RIGHT:
+					sprites[i] = soilSprite.getSubimage(2 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CORNER_TOP_LEFT:
+					sprites[i] = soilSprite.getSubimage(3 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CORNER_TOP_RIGHT:
+					sprites[i] = soilSprite.getSubimage(4 * TILE_SIZE, 0 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CORNER_BOTTOM_LEFT:
+					sprites[i] = soilSprite.getSubimage(3 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case SOIL_CORNER_BOTTOM_RIGHT:
+					sprites[i] = soilSprite.getSubimage(4 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
 				default:
 					break;
 				}
@@ -130,10 +190,12 @@ public class TileManager {
 					
 					
 					GameObject block = new GameObject(j * gp.tileSize, i * gp.tileSize);
-//					if (!tile[num].hasCollision) {
-//						block.isBlocking = false;
-//					}
 					block.isBlocking = false;
+					switch (num) {
+					case WATER_CENTER:
+						block.isBlocking = true;
+						break;
+					}
 					gp.addGameObject(block);
 					
 				}

@@ -17,12 +17,12 @@ public class GUI {
 		this.arial_20 = new Font("Arial", Font.PLAIN, 20);
 	}
 	
-	public void update(double dt) {
-		updatePosition(dt);
+	public void update() {
+		updatePosition();
 	}
 	
-	void updatePosition(double dt) {
-		positionY += -speed * dt;
+	void updatePosition() {
+		positionY += -speed;
 	}
 	
 	public void draw(Graphics2D g2) {
