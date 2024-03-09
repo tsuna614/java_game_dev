@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-import entity.CollisionBlock;
 import main.GamePanel;
 import objects.GameObject;
 import objects.KeyObject;

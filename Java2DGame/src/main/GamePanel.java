@@ -12,8 +12,9 @@ import javax.swing.JPanel;
 
 import HUD.GUI;
 import HUD.HUD;
-import entity.CollisionBlock;
+import entity.Oldman;
 import entity.Player;
+import entity.Slime;
 import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
@@ -27,7 +28,7 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	// SCREEN SETTINGS
 	final int originalTileSize = 16;
-	final int scale = 3; // scale up the sprite or else 16x16 is going to be very small
+	final int scale = 3; // scale up the sprite since 16x16 is going to be very small
 	
 	public final int tileSize = originalTileSize * scale;
 	public final int maxScreenCol = 20;
@@ -45,7 +46,7 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	int FPS = 60;
 	
-	KeyHandler keyHandler = new KeyHandler();
+	KeyHandler keyHandler = new KeyHandler(this);
 	Thread gameThread;
 	
 	// PLAYER
@@ -59,13 +60,21 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	// SOUND
 	Sound sound = new Sound();
-	boolean playMusic = true;
+	boolean playMusic = false;
 	boolean playSFX = true;
 	
 	// HUD
 	public HUD hud = new HUD(this);
 	public ArrayList<GUI> GUIList = new ArrayList<>();
 	
+	// GAME STATE
+	public enum GameState {
+		paused,
+		play,
+		inDialogue,
+		inMenu
+	}
+	public GameState gameState;
 	
 	public GamePanel() {
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -74,6 +83,8 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		this.addKeyListener(keyHandler);
 		this.setFocusable(true); // with this, this GamePanel can be 'focused' to receive key input
+		
+		this.gameState = GameState.inMenu;
 		
 		tileManager.loadMap("map03.txt");
 		
@@ -99,16 +110,25 @@ public class GamePanel extends JPanel implements Runnable {
 		gameThread.start();
 	}
 	
-	public boolean checkCollision(Player player, GameObject block) {
+	public boolean checkCollision(GameObject player, GameObject block) {
 		final float playerX = player.getPosition().x + player.getHitbox().x;
 		final float playerY = player.getPosition().y + player.getHitbox().y;
 		final float playerWidth = player.getHitbox().width;
 		final float playerHeight = player.getHitbox().height;
 		
-		return playerX < block.getPosition().x + block.getWidth() &&
-				playerX + playerWidth > block.getPosition().x &&
-				playerY < block.getPosition().y + block.getHeight() &&
-				playerY + playerHeight > block.getPosition().y;
+		final float blockX = block.getPosition().x + block.getHitbox().x;
+		final float blockY = block.getPosition().y + block.getHitbox().y;
+		final float blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
+		final float blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
+			
+		return playerX < blockX + blockWidth &&
+				playerX + playerWidth > blockX &&
+				playerY < blockY + blockHeight &&
+				playerY + playerHeight > blockY;
+//		return playerX < block.getPosition().x + block.getWidth() &&
+//				playerX + playerWidth > block.getPosition().x &&
+//				playerY < block.getPosition().y + block.getHeight() &&
+//				playerY + playerHeight > block.getPosition().y;
 	}
 	
 	@Override
@@ -143,15 +163,17 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	public void update() {
 		
+		if (gameState != GameState.play) return;
+		
 		// không cần phải truyền delta time vào
 		
 		player.update();
 		
-//		for (GameObject object : gameObjects) {
-//			if (object instanceof KeyObject) {
-//				object.update();
-//			}
-//		}
+		for (GameObject object : gameObjects) {
+			if (object instanceof Oldman) {
+				((Oldman) object).update();
+			}
+		}
 		
 		for (GUI object : GUIList) {
 			object.update();
@@ -164,16 +186,18 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		Graphics2D g2 = (Graphics2D)g; // change Graphics to Graphics2D
 		
-		camX = (player.getPosition().x - screenWidth / 2);
-		camY = (player.getPosition().y - screenHeight / 2);
-		
-		g2.translate(-camX, -camY);
-		
-		// drawing the blue "ocean" background
-		g2.setColor(Color.decode("#0090e6"));
-		g2.fillRect((int) camX, (int) camY, screenWidth, screenHeight);
-		
-		drawingObjects(g2);
+		if (gameState != GameState.inMenu) {
+			camX = (player.getPosition().x - screenWidth / 2);
+			camY = (player.getPosition().y - screenHeight / 2);
+			
+			g2.translate(-camX, -camY);
+			
+			// drawing the blue "ocean" background
+			g2.setColor(Color.decode("#0090e6"));
+			g2.fillRect((int) camX, (int) camY, screenWidth, screenHeight);
+			
+			drawingObjects(g2);
+		}
 		
 		hud.draw(g2);
 		
@@ -186,7 +210,7 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	public void drawingObjects(Graphics2D g2) {
 
-		
+		// some objects get added in here when player's y < that object's y (meaning the player is behind the object)
 		ArrayList<GameObject> priorityObjects = new ArrayList<>();
 		
 		for (GameObject object : gameObjects) {
@@ -196,8 +220,14 @@ public class GamePanel extends JPanel implements Runnable {
 				object.draw(g2);
 			} else if (object instanceof BootsObject) {
 				object.draw(g2);
-			} else if (object instanceof TreeObject) {
-				if (player.getPosition().y < object.getPosition().y) {
+			} else if (object instanceof TreeObject || object instanceof Oldman) {
+				if (player.getPosition().y < object.getPosition().y - object.getHitbox().y) {
+					priorityObjects.add(object);					
+				} else {
+					object.draw(g2);
+				}
+			} else if (object instanceof Slime) {
+				if (player.getPosition().y + player.getHitbox().height< object.getPosition().y + object.getHitbox().y + object.getHitbox().height) {
 					priorityObjects.add(object);					
 				} else {
 					object.draw(g2);
@@ -211,10 +241,10 @@ public class GamePanel extends JPanel implements Runnable {
 		player.draw(g2);
 		
 		for (GameObject object : priorityObjects) {
-			if (object instanceof TreeObject) {
-				object.draw(g2);
-			}
+			object.draw(g2);
 		}
+		
+		priorityObjects.clear();
 	}
 	
 	public void playMusic(String fileName) {

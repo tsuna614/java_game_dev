@@ -1,6 +1,7 @@
 package objects;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 
@@ -16,8 +17,11 @@ public class TreeObject extends GameObject {
 		super(x, y);
 		this.gp = gp;
 		
+		// the width and height of this tree object is only for drawing sprite
+		// it has nothing to do with checking collisions
+		// this is because tree objects have their own custom hitbox
 		this.setWidth(gp.tileSize * 2);
-		this.setHeight(gp.tileSize * 1 - 16);
+		this.setHeight(gp.tileSize * 3);
 		
 		try {
 			sprite = ImageIO.read(new File("res/tiles/tree.png"));
@@ -27,10 +31,15 @@ public class TreeObject extends GameObject {
 			e.printStackTrace();
 		}
 		
+		if (treeType == 2) {
+			this.setHitBox(new Rectangle(32, 16, (int) this.getWidth() - 32 * 2, (int) gp.tileSize - 32));
+		} else {
+			this.setHitBox(new Rectangle(16, 0, (int) this.getWidth() - 16 * 2, (int) gp.tileSize - 16));			
+		}
 	}
 	
 	@Override
 	public void draw(Graphics2D g2) {
-		g2.drawImage(this.sprite, (int) x, (int) y  - gp.tileSize * 2, (int) this.getWidth(), gp.tileSize * 3, null);
+		g2.drawImage(this.sprite, (int) x, (int) y  - gp.tileSize * 2, (int) this.getWidth(), (int) this.getHeight(), null);
 	}
 }

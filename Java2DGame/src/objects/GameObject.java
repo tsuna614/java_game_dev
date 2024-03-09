@@ -1,6 +1,7 @@
 package objects;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -23,7 +24,8 @@ public class GameObject {
 	
 	public BufferedImage sprite;
 	
-	GamePanel gp;
+	protected GamePanel gp;
+	Rectangle hitbox = new Rectangle(0, 0, 0, 0);
 	
 //	private BufferedImage[] testAnimation = {Sprite.getSprite(0, 0), Sprite.getSprite(0, 1), Sprite.getSprite(0, 2) };
 //	public Animation animation = new Animation(testAnimation, 10);
@@ -64,6 +66,13 @@ public class GameObject {
 	}
 	public void setHeight(int height) {
 		this.height = height;
+	}
+	
+	public void setHitBox(Rectangle hitbox) {
+		this.hitbox = hitbox;
+	}
+	public Rectangle getHitbox() {
+		return this.hitbox;
 	}
 	
 	////////////////// LOADING SPRITE AND DRAW /////////////////////

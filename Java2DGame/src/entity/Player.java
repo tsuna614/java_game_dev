@@ -4,6 +4,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -13,6 +14,7 @@ import javax.imageio.ImageIO;
 
 import HUD.GUI;
 import main.GamePanel;
+import main.GamePanel.GameState;
 import main.KeyHandler;
 import objects.BootsObject;
 import objects.DoorObject;
@@ -34,17 +36,13 @@ public class Player extends GameObject {
 	
 	float speed = 4;
 	float rotationAngle = 0;
-	Rectangle hitbox;
 	Vector2 velocity;
 	float ay = (float) 5;
-	public String direction;
 	PlayerState playerState;
-	public int hasKey = 0;
 	
-	boolean isUpLeftRecently = false;
-	boolean isUpRightRecently = false;
-	boolean isDownLeftRecently = false;
-	boolean isDownRightRecently = false;
+	public String direction;
+	public int hasKey = 0;
+	public int currentLife;
 	
 	
 	// SET TIMER FUNCTION TO DELETE GUI TEXT AFTER 1 SECOND
@@ -63,26 +61,26 @@ public class Player extends GameObject {
 	    	gp.GUIList.remove(gui);
 	    }
 	}
-	class DirectionTimer extends TimerTask {
-		private final String direction;
-		Player player;
-		DirectionTimer(Player player, String direction) {
-			this.direction = direction;
-			this.player = player;
-		}
-		
-		public void run() {
-			if (direction == "upleft") {
-				player.isUpLeftRecently = false;
-			} else if (direction == "upright") {
-				player.isUpRightRecently = false;
-			} else if (direction == "downleft") {
-				player.isDownLeftRecently = false;
-			} else if (direction == "downright") {
-				player.isDownRightRecently = false;
-			}
-	    }
-	}
+//	class DirectionTimer extends TimerTask {
+//		private final String direction;
+//		Player player;
+//		DirectionTimer(Player player, String direction) {
+//			this.direction = direction;
+//			this.player = player;
+//		}
+//		
+//		public void run() {
+//			if (direction == "upleft") {
+//				player.isUpLeftRecently = false;
+//			} else if (direction == "upright") {
+//				player.isUpRightRecently = false;
+//			} else if (direction == "downleft") {
+//				player.isDownLeftRecently = false;
+//			} else if (direction == "downright") {
+//				player.isDownRightRecently = false;
+//			}
+//	    }
+//	}
 	
 	// ANIMATIONS
 	private Animation walkLeft;
@@ -103,17 +101,13 @@ public class Player extends GameObject {
 		
 		this.setWidth(gp.tileSize);
 		this.setHeight(gp.tileSize);
-		
-		hitbox = new Rectangle(8, 16, gp.tileSize - 8 * 2, gp.tileSize - 16);
+
+		this.setHitBox(new Rectangle(8, 16, gp.tileSize - 8 * 2, gp.tileSize - 16));
 		
 		velocity = new Vector2(0,0);
 		
 		setDefaultValues();
 		loadPlayerAnimation();
-	}
-	
-	public Rectangle getHitbox() {
-		return this.hitbox;
 	}
 	
 	public void setDefaultValues() {
@@ -205,46 +199,30 @@ public class Player extends GameObject {
 		
 		playerState = PlayerState.walking;
 		if (keyHandler.upPressed) {
-			if (!isUpLeftRecently && !isUpRightRecently) {				
-				direction = "up";
-			}
+			direction = "up";
 			velocity.y -= speed;
 		}
 		if (keyHandler.downPressed) {
-			if (!isDownLeftRecently && !isDownRightRecently) {
-				direction = "down";				
-			}
+			direction = "down";
 			velocity.y += speed;
 		}
 		if (keyHandler.leftPressed) {
-			if (!isUpLeftRecently && !isDownLeftRecently)  {
-				direction = "left";				
-			}
+			direction = "left";
 			velocity.x -= speed;
 		}
 		if (keyHandler.rightPressed) {
-			if (!isUpRightRecently && !isDownRightRecently) {
-				direction = "right";				
-			}
+			direction = "right";
 			velocity.x += speed;
 		}
 		
 		if (keyHandler.upPressed && keyHandler.leftPressed) {
-			isUpLeftRecently = true;
 			direction = "upleft";
-			timer.schedule(new DirectionTimer(this, direction), 400);
 		} else if (keyHandler.upPressed && keyHandler.rightPressed) {
-			isUpRightRecently = true;
 			direction = "upright";
-			timer.schedule(new DirectionTimer(this, direction), 400);
 		} else if (keyHandler.downPressed && keyHandler.leftPressed) {
-			isDownLeftRecently = true;
 			direction = "downleft";
-			timer.schedule(new DirectionTimer(this, direction), 400);
 		} else if (keyHandler.downPressed && keyHandler.rightPressed) {
-			isDownRightRecently = true;
 			direction = "downright";
-			timer.schedule(new DirectionTimer(this, direction), 400);
 		}
 		
 		if (velocity.x == 0 && velocity.y == 0) {
@@ -266,18 +244,19 @@ public class Player extends GameObject {
 		Iterator<GameObject> iter = gp.gameObjects.iterator();
 		while (iter.hasNext()) {
 			GameObject block = iter.next();
-//		for (final GameObject block : gp.gameObjects) {
+			
+			final float blockX = block.getPosition().x + block.getHitbox().x;
+			final float blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
+			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.x < 0) {
 						velocity.x = 0;
-						this.x = block.getPosition().x + block.getWidth() - hitbox.x;
-//						this.worldX = block.getPosition().x + gp.tileSize - hitbox.x;
+						this.x = blockX + blockWidth - this.getHitbox().x;
 					}
 					else if (velocity.x > 0) {
 						velocity.x = 0;
-						this.x = block.getPosition().x - this.getWidth() + hitbox.x;
-//						this.worldX = block.getPosition().x - gp.tileSize + hitbox.x;
+						this.x = blockX - this.getWidth() + this.getHitbox().x;
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
@@ -287,9 +266,9 @@ public class Player extends GameObject {
 		// check collision with world bounder
 		if (this.x < 0 && velocity.x < 0) {
 			velocity.x = 0;
-			this.x = -hitbox.x;
-		} else if (this.x + gp.tileSize - hitbox.x > gp.worldWidth && velocity.x > 0) {
-			this.x = gp.worldWidth - gp.tileSize + hitbox.x;
+			this.x = -this.getHitbox().x;
+		} else if (this.x + gp.tileSize - this.getHitbox().x > gp.worldWidth && velocity.x > 0) {
+			this.x = gp.worldWidth - gp.tileSize + this.getHitbox().x;
 		}
 	}
 	
@@ -298,16 +277,19 @@ public class Player extends GameObject {
 		Iterator<GameObject> iter = gp.gameObjects.iterator();
 		while (iter.hasNext()) {
 			GameObject block = iter.next();
-//		for (final GameObject block : gp.gameObjects) {
+
+			final float blockY = block.getPosition().y + block.getHitbox().y;
+			final float blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
+			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.y < 0) {
 						velocity.y = 0;
-						this.y = block.getPosition().y + block.getHeight() - hitbox.y;
+						this.y = blockY + blockHeight - this.getHitbox().y;
 					}
 					else if (velocity.y > 0) {
 						velocity.y = 0;
-						this.y = block.getPosition().y - this.getHeight();
+						this.y = blockY - this.getHeight();
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
@@ -315,9 +297,9 @@ public class Player extends GameObject {
 			
 		}
 		
-		if (this.y + hitbox.y < 0 && velocity.y < 0) {
+		if (this.y + this.getHitbox().y < 0 && velocity.y < 0) {
 			velocity.y = 0;
-			this.y = -hitbox.y;
+			this.y = -this.getHitbox().y;
 		} else if (this.y + gp.tileSize > gp.worldHeight && velocity.y > 0) {
 			velocity.y = 0;
 			this.y = gp.worldHeight - gp.tileSize;
@@ -352,6 +334,10 @@ public class Player extends GameObject {
 			timer.schedule(new DeleteGUI(gui), 1000); // 1000 milliseconds
 			
 			iter.remove();
+		} else if (block instanceof Oldman) {
+			if (keyHandler.spacePressed) {
+				gp.gameState = GameState.inDialogue;
+			}
 		}
 	}
 	
@@ -384,7 +370,9 @@ public class Player extends GameObject {
 		
 //		g2.rotate(Math.toRadians(rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);
 		
+//		g2.scale(-1, 1);
 		g2.drawImage(currentAnimation.getCurrentFrame(), (int) this.x, (int) this.y, gp.tileSize, gp.tileSize, null);
+//		g2.scale(-1, 1);
 //		g2.drawRect((int) worldX, (int) worldY, gp.tileSize, gp.tileSize);
 //		g2.rotate(Math.toRadians(-rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);
 	}
