@@ -29,10 +29,9 @@ public class ObjectManager {
 		gameObjects.add(new TreeObject(200, 600, 2, gp));
 		
 		gameObjects.add(new Oldman(400, 200, gp));
-		gameObjects.add(new Slime(100, 200, gp));
+//		gameObjects.add(new Slime(100, 200, gp));
 
 		for (GameObject object : gameObjects) {
-			gp.gameObjects.add(object);
-		}
+			gp.addGameObject(object);		}
 	}
 }

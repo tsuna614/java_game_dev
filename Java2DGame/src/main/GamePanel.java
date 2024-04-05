@@ -31,6 +31,7 @@ public class GamePanel extends JPanel implements Runnable {
 	final int scale = 3; // scale up the sprite since 16x16 is going to be very small
 	
 	public final int tileSize = originalTileSize * scale;
+	
 	public final int maxScreenCol = 20;
 	public final int maxScreenRow = 12;
 	public final int screenWidth = maxScreenCol * tileSize; // 768 pixels
@@ -172,6 +173,8 @@ public class GamePanel extends JPanel implements Runnable {
 		for (GameObject object : gameObjects) {
 			if (object instanceof Oldman) {
 				((Oldman) object).update();
+			} else if (object instanceof Slime) {
+				((Slime) object).update();
 			}
 		}
 		

@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 
 import main.GamePanel;
 import main.GamePanel.GameState;
+import utils.Sprite;
 
 public class HUD {
 	private final GamePanel gp;
@@ -30,6 +31,9 @@ public class HUD {
 		
 		try {
 			key = ImageIO.read(new File("res/objects/key.png"));
+			Sprite.loadSprite("res/HUD/heart.png");
+			heart = Sprite.getSprite(0, 0);
+			halfHeart = Sprite.getSprite(1, 0);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -39,18 +43,22 @@ public class HUD {
 	public void draw(Graphics2D g2) {
 		if (gp.gameState == GameState.inMenu) {
 			drawMenu(g2);
-			return;
-		}
-		
-		drawKey(g2);
-		
-		if (gp.gameState == GameState.inDialogue) {
-			drawDialogueScreen(g2);
-		}
+		} else {
 			
-		if (gp.gameState == GameState.paused) {
-			drawPausedScreen(g2);			
-		}		
+//			drawKey(g2);
+			
+			drawHeart(g2);
+			
+			if (gp.gameState == GameState.inDialogue) {
+				drawDialogueScreen(g2);
+			}
+			
+			if (gp.gameState == GameState.paused) {
+				drawPausedScreen(g2);			
+			}		
+			
+		}
+		
 	}
 	
 	private void drawMenu(Graphics2D g2) {
@@ -66,9 +74,18 @@ public class HUD {
 		g2.drawString("x " + gp.player.hasKey, gp.camX + 80, gp.camY + 60);
 	}
 	
-//	private void drawHeart(Graphics2D g2) {
-//		
-//	}
+	private void drawHeart(Graphics2D g2) {
+		// every 2 currentLife player have, draw a full heart.
+		for (int i=1; i<gp.player.currentLife; i += 2) {
+			g2.drawImage(heart, (int) gp.camX + 30 * i, (int) gp.camY + 20, gp.tileSize, gp.tileSize, null);			
+		}
+		
+		// if the player's health is odd number, draw an extra half heart at the end
+		if (gp.player.currentLife % 2 != 0) {
+			int positionX = (int) gp.camX + 30 * (gp.player.currentLife);
+			g2.drawImage(halfHeart, positionX, (int) gp.camY + 20, gp.tileSize, gp.tileSize, null);	
+		}
+	}
 	
 	private void drawPausedScreen(Graphics2D g2) {
 		float x = gp.camX + gp.screenWidth / 2 - gp.tileSize * (float) 1.5;

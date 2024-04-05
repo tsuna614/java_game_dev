@@ -1,6 +1,7 @@
 package entity;
 
 import java.awt.Graphics2D;
+
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -106,6 +107,8 @@ public class Player extends GameObject {
 		
 		velocity = new Vector2(0,0);
 		
+		currentLife = 6;
+		
 		setDefaultValues();
 		loadPlayerAnimation();
 	}
@@ -146,6 +149,7 @@ public class Player extends GameObject {
 //		}
 		updatePlayerAnimation();
 		checkPlayerInput();
+		checkIfPlayerMoveDiagonally();
 //		applyGravity(dt);
 		updatePlayerVerticalPosition();
 		checkVerticalCollision();
@@ -238,6 +242,13 @@ public class Player extends GameObject {
 //		if (keyHandler.rightPressed) {
 //			rotationAngle += 2;
 //		}
+	}
+	
+	public void checkIfPlayerMoveDiagonally() {
+		if (velocity.x != 0 && velocity.y != 0) {
+			velocity.x = (float) (velocity.x / Math.sqrt(2));
+			velocity.y = (float) (velocity.y / Math.sqrt(2));
+		}
 	}
 	
 	public void checkHorizontalCollision() {
@@ -360,6 +371,10 @@ public class Player extends GameObject {
 //		if (keyHandler.upPressed) worldY += velocity.y;
 //		else if (keyHandler.downPressed) worldY -= velocity.y;
 		this.y += velocity.y;
+	}
+	
+	public void gettingHit() {
+		
 	}
 	
 	@Override
