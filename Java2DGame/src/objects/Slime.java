@@ -1,14 +1,14 @@
-package entity;
+package objects;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
 import java.util.Random;
 
-import entity.Oldman.NPCState;
 import main.GamePanel;
-import objects.GameObject;
+import objects.Oldman.NPCState;
 import utils.Animation;
 import utils.Sprite;
 import utils.Vector2;
@@ -33,8 +33,8 @@ public class Slime extends GameObject {
 	int counter = 0;
 
 	
-	public Slime(float x, float y, GamePanel gp) {
-		super(x, y);
+	public Slime(Point2D position, GamePanel gp) {
+		super(position);
 		
 		this.gp = gp;
 		this.setWidth(gp.tileSize);
@@ -51,7 +51,7 @@ public class Slime extends GameObject {
 		this.setHitBox(new Rectangle(8, 12, 16, 12));
 	}
 	
-	public double calculateDistance(float x1, float y1, float x2, float y2) {
+	public double calculateDistance(double x1, double y1, double x2, double y2) {
 		return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 	}
 	
@@ -76,15 +76,15 @@ public class Slime extends GameObject {
 	public void changeDirection() {
 		if (currentState == NPCState.idle) return;
 		
-		if (calculateDistance(x, y, gp.player.getPosition().x, gp.player.getPosition().y) <= 200) {
+		if (calculateDistance(position.getX(), position.getY(), gp.player.getPosition().getX(), gp.player.getPosition().getY()) <= 200) {
 			counter = 0;
-			if (x < gp.player.getPosition().x) {
+			if (position.getX() < gp.player.getPosition().getX()) {
 				velocity.x = speed;
 			} else {
 				velocity.x = -speed;
 			}
 			
-			if (y < gp.player.getPosition().y) {
+			if (position.getY() < gp.player.getPosition().getY()) {
 				velocity.y = speed;
 			} else {
 				velocity.y = -speed;
@@ -122,29 +122,33 @@ public class Slime extends GameObject {
 			// excluding itself
 			if (this == block) continue;
 			
-			final float blockX = block.getPosition().x + block.getHitbox().x;
-			final float blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
+			final double blockX = block.getPosition().getX() + block.getHitbox().x;
+			final double blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
 			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.x < 0) {
 						velocity.x = 0;
-						this.x = blockX + blockWidth - this.getHitbox().x;
+//						this.x = blockX + blockWidth - this.getHitbox().x;
+						position.setLocation(blockX + blockWidth - this.getHitbox().x, position.getY());
 					}
 					else if (velocity.x > 0) {
 						velocity.x = 0;
-						this.x = blockX - this.getWidth() + this.getHitbox().x;
+//						this.x = blockX - this.getWidth() + this.getHitbox().x;
+						position.setLocation(blockX - this.getWidth() + this.getHitbox().x, position.getY());
 					}
 				}
 			}
 		}
 		
 		// check collision with world bounder
-		if (this.x < 0 && velocity.x < 0) {
+		if (position.getX()< 0 && velocity.x < 0) {
 			velocity.x = 0;
-			this.x = -this.getHitbox().x;
-		} else if (this.x + gp.tileSize - this.getHitbox().x > gp.worldWidth && velocity.x > 0) {
-			this.x = gp.worldWidth - gp.tileSize + this.getHitbox().x;
+//			this.x = -this.getHitbox().x;
+			position.setLocation(-this.getHitbox().x, position.getY());
+		} else if (position.getX() + gp.tileSize - this.getHitbox().x > gp.worldWidth && velocity.x > 0) {
+//			this.x = gp.worldWidth - gp.tileSize + this.getHitbox().x;
+			position.setLocation(gp.worldWidth - gp.tileSize + this.getHitbox().x, position.getY());
 		}
 	}
 	
@@ -157,39 +161,45 @@ public class Slime extends GameObject {
 			// excluding itself
 			if (this == block) continue;
 
-			final float blockY = block.getPosition().y + block.getHitbox().y;
-			final float blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
+			final double blockY = block.getPosition().getY() + block.getHitbox().y;
+			final double blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
 			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.y < 0) {
 						velocity.y = 0;
-						this.y = blockY + blockHeight - this.getHitbox().y;
+//						this.y = blockY + blockHeight - this.getHitbox().y;
+						position.setLocation(position.getX(), blockY + blockHeight - this.getHitbox().y);
 					}
 					else if (velocity.y > 0) {
 						velocity.y = 0;
-						this.y = blockY - this.getHeight();
+//						this.y = blockY - this.getHeight();
+						position.setLocation(position.getX(), blockY - this.getHeight());
 					}
 				}
 			}
 			
 		}
 		
-		if (this.y + this.getHitbox().y < 0 && velocity.y < 0) {
+		if (position.getY() + this.getHitbox().y < 0 && velocity.y < 0) {
 			velocity.y = 0;
-			this.y = -this.getHitbox().y;
-		} else if (this.y + gp.tileSize > gp.worldHeight && velocity.y > 0) {
+//			this.y = -this.getHitbox().y;
+			position.setLocation(position.getX(), -this.getHitbox().y);
+		} else if (position.getY() + gp.tileSize > gp.worldHeight && velocity.y > 0) {
 			velocity.y = 0;
-			this.y = gp.worldHeight - gp.tileSize;
+//			this.y = gp.worldHeight - gp.tileSize;
+			position.setLocation(position.getX(), gp.worldHeight - gp.tileSize);
 		}
 	}
 	
 	public void updateHorizontalMovement() {
-		this.x += velocity.x;
+//		this.x += velocity.x;
+		position.setLocation(position.getX() + velocity.x, position.getY());
 	}
 	
 	public void updateVerticalMovement() {
-		this.y += velocity.y;		
+//		this.y += velocity.y;	
+		position.setLocation(position.getX(), position.getY() + velocity.y);
 	}
 	
 	public void loadAnimation() {
@@ -205,9 +215,9 @@ public class Slime extends GameObject {
 	
 	public void draw(Graphics2D g2) {
 		if (direction == "right") {
-			g2.drawImage(currentAnimation.getCurrentFrame(), (int) this.x, (int) this.y, gp.tileSize, gp.tileSize, null);
+			g2.drawImage(currentAnimation.getCurrentFrame(), (int) position.getX(), (int) position.getY(), gp.tileSize, gp.tileSize, null);
 		} else {
-			g2.drawImage(currentAnimation.getCurrentFrame(), (int) this.x + gp.tileSize, (int) this.y, - gp.tileSize, gp.tileSize, null);
+			g2.drawImage(currentAnimation.getCurrentFrame(), (int) position.getX() + gp.tileSize, (int) position.getY(), - gp.tileSize, gp.tileSize, null);
 		}
 	}
 }

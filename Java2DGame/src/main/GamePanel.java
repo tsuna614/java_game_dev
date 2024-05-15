@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,13 +13,13 @@ import javax.swing.JPanel;
 
 import HUD.GUI;
 import HUD.HUD;
-import entity.Oldman;
-import entity.Player;
-import entity.Slime;
 import objects.BootsObject;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
+import objects.Oldman;
+import objects.Player;
+import objects.Slime;
 import objects.TreeObject;
 import utils.ObjectManager;
 import utils.TileManager;
@@ -51,7 +52,7 @@ public class GamePanel extends JPanel implements Runnable {
 	Thread gameThread;
 	
 	// PLAYER
-	public Player player = new Player(100, 100 , this, keyHandler);
+	public Player player;
 	
 	// DRAW TILES AND SET INVISIBLE WALLS
 	TileManager tileManager = new TileManager(this);
@@ -61,7 +62,7 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	// SOUND
 	Sound sound = new Sound();
-	boolean playMusic = false;
+	boolean playMusic = true;
 	boolean playSFX = true;
 	
 	// HUD
@@ -78,12 +79,15 @@ public class GamePanel extends JPanel implements Runnable {
 	public GameState gameState;
 	
 	public GamePanel() {
+		// INITIATE GAME
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
 		this.setBackground(Color.black);
 		this.setDoubleBuffered(true);
 		
 		this.addKeyListener(keyHandler);
 		this.setFocusable(true); // with this, this GamePanel can be 'focused' to receive key input
+		
+		player = new Player(new Point2D.Double(100, 100) , this, keyHandler);
 		
 		this.gameState = GameState.inMenu;
 		
@@ -112,13 +116,13 @@ public class GamePanel extends JPanel implements Runnable {
 	}
 	
 	public boolean checkCollision(GameObject player, GameObject block) {
-		final float playerX = player.getPosition().x + player.getHitbox().x;
-		final float playerY = player.getPosition().y + player.getHitbox().y;
+		final float playerX = (float) (player.getPosition().getX() + player.getHitbox().getX());
+		final float playerY = (float) (player.getPosition().getY() + player.getHitbox().getY());
 		final float playerWidth = player.getHitbox().width;
 		final float playerHeight = player.getHitbox().height;
 		
-		final float blockX = block.getPosition().x + block.getHitbox().x;
-		final float blockY = block.getPosition().y + block.getHitbox().y;
+		final float blockX = (float) (block.getPosition().getX() + block.getHitbox().getX());
+		final float blockY = (float) (block.getPosition().getY() + block.getHitbox().getY());
 		final float blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
 		final float blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
 			
@@ -190,8 +194,8 @@ public class GamePanel extends JPanel implements Runnable {
 		Graphics2D g2 = (Graphics2D)g; // change Graphics to Graphics2D
 		
 		if (gameState != GameState.inMenu) {
-			camX = (player.getPosition().x - screenWidth / 2);
-			camY = (player.getPosition().y - screenHeight / 2);
+			camX = (float) (player.getPosition().getX() - screenWidth / 2);
+			camY = (float) (player.getPosition().getY() - screenHeight / 2);
 			
 			g2.translate(-camX, -camY);
 			
@@ -224,20 +228,20 @@ public class GamePanel extends JPanel implements Runnable {
 			} else if (object instanceof BootsObject) {
 				object.draw(g2);
 			} else if (object instanceof TreeObject || object instanceof Oldman) {
-				if (player.getPosition().y < object.getPosition().y - object.getHitbox().y) {
+				if (player.getPosition().getY() < object.getPosition().getY() - object.getHitbox().y) {
 					priorityObjects.add(object);					
 				} else {
 					object.draw(g2);
 				}
 			} else if (object instanceof Slime) {
-				if (player.getPosition().y + player.getHitbox().height< object.getPosition().y + object.getHitbox().y + object.getHitbox().height) {
+				if (player.getPosition().getY() + player.getHitbox().height< object.getPosition().getY() + object.getHitbox().y + object.getHitbox().height) {
 					priorityObjects.add(object);					
 				} else {
 					object.draw(g2);
 				}
 			}
 				else {
-				tileManager.drawSingle(g2, (int) object.getPosition().x, (int) object.getPosition().y);
+				tileManager.drawSingle(g2, (int) object.getPosition().getX(), (int) object.getPosition().getY());
 			}
 		}
 		

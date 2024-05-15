@@ -1,13 +1,14 @@
 package objects;
 
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 
 import main.GamePanel;
 
 public class KeyObject extends GameObject {
 
-	public KeyObject(float x, float y, GamePanel gp) {
-		super(x, y);
+	public KeyObject(Point2D position, GamePanel gp) {
+		super(position);
 		this.gp = gp;
 		
 		this.setWidth(gp.tileSize);

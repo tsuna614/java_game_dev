@@ -5,12 +5,12 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 
 public class GUI {
-	private float positionX, positionY;
+	private double positionX, positionY;
 	private String text;
 	private final float speed = 1;
 	private final Font arial_20;
 	
-	public GUI(float x, float y, String text) {
+	public GUI(double x, double y, String text) {
 		this.positionX = x;
 		this.positionY = y;
 		this.text = text;
@@ -28,6 +28,6 @@ public class GUI {
 	public void draw(Graphics2D g2) {
 		g2.setFont(arial_20);
 		g2.setColor(Color.white);
-		g2.drawString(text, positionX, positionY);
+		g2.drawString(text, (int) positionX, (int) positionY);
 	}
 }

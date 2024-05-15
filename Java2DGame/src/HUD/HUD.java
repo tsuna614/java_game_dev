@@ -34,7 +34,7 @@ public class HUD {
 			Sprite.loadSprite("res/HUD/heart.png");
 			heart = Sprite.getSprite(0, 0);
 			halfHeart = Sprite.getSprite(1, 0);
-		} catch (IOException e) {
+		} catch (IOException e)   {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

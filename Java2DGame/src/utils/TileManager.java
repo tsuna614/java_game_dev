@@ -1,6 +1,7 @@
 package utils;
 
 import java.awt.Graphics2D;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -188,7 +189,7 @@ public class TileManager {
 					mapTileNum[j][i] = num;
 					
 					
-					GameObject block = new GameObject(j * gp.tileSize, i * gp.tileSize);
+					GameObject block = new GameObject(new Point2D.Double(j * gp.tileSize, i * gp.tileSize));
 					block.isBlocking = false;
 					switch (num) {
 					case WATER_CENTER:

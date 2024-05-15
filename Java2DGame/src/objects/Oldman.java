@@ -1,7 +1,8 @@
-package entity;
+package objects;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
 import java.util.Random;
@@ -9,9 +10,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import HUD.GUI;
-import entity.Player.DeleteGUI;
 import main.GamePanel;
-import objects.GameObject;
+import objects.Player.DeleteGUI;
 import utils.Animation;
 import utils.Sprite;
 import utils.Vector2;
@@ -34,8 +34,8 @@ public class Oldman extends GameObject {
 	float speed = (float) 0.5;
 	Vector2 velocity = new Vector2(0, 0);
 	
-	public Oldman(int x, int y, GamePanel gp) {
-		super(x, y);
+	public Oldman(Point2D position, GamePanel gp) {
+		super(position);
 		
 		this.gp = gp;
 		this.setWidth(gp.tileSize);
@@ -118,29 +118,31 @@ public class Oldman extends GameObject {
 			// excluding itself
 			if (this == block) continue;
 			
-			final float blockX = block.getPosition().x + block.getHitbox().x;
-			final float blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
+			final double blockX = block.getPosition().getX() + block.getHitbox().x;
+			final double blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
 			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.x < 0) {
 						velocity.x = 0;
-						this.x = blockX + blockWidth - this.getHitbox().x;
+						position.setLocation(blockX + blockWidth - this.getHitbox().x, position.getY());
 					}
 					else if (velocity.x > 0) {
 						velocity.x = 0;
-						this.x = blockX - this.getWidth() + this.getHitbox().x;
+						position.setLocation(blockX - this.getWidth() + this.getHitbox().x, position.getY());
 					}
 				}
 			}
 		}
 		
 		// check collision with world bounder
-		if (this.x < 0 && velocity.x < 0) {
+		if (position.getX() < 0 && velocity.x < 0) {
 			velocity.x = 0;
-			this.x = -this.getHitbox().x;
-		} else if (this.x + gp.tileSize - this.getHitbox().x > gp.worldWidth && velocity.x > 0) {
-			this.x = gp.worldWidth - gp.tileSize + this.getHitbox().x;
+			position.setLocation(-this.getHitbox().x, position.getY());
+//			this.x = -this.getHitbox().x;
+		} else if (position.getX() + gp.tileSize - this.getHitbox().x > gp.worldWidth && velocity.x > 0) {
+			position.setLocation(gp.worldWidth - gp.tileSize + this.getHitbox().x, position.getY());
+//			this.x = gp.worldWidth - gp.tileSize + this.getHitbox().x;
 		}
 	}
 	
@@ -153,39 +155,46 @@ public class Oldman extends GameObject {
 			// excluding itself
 			if (this == block) continue;
 
-			final float blockY = block.getPosition().y + block.getHitbox().y;
-			final float blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
+			final double blockY = block.getPosition().getY() + block.getHitbox().y;
+			final double blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
 			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.y < 0) {
 						velocity.y = 0;
-						this.y = blockY + blockHeight - this.getHitbox().y;
+						position.setLocation(position.getX(), blockY + blockHeight - this.getHitbox().y);
+//						this.y = blockY + blockHeight - this.getHitbox().y;
 					}
 					else if (velocity.y > 0) {
 						velocity.y = 0;
-						this.y = blockY - this.getHeight();
+						position.setLocation(position.getX(), blockY - this.getHeight());
+//						this.y = blockY - this.getHeight();
 					}
 				}
 			}
 			
 		}
 		
-		if (this.y + this.getHitbox().y < 0 && velocity.y < 0) {
+		// check collision with world bounder
+		if (position.getY() + this.getHitbox().y < 0 && velocity.y < 0) {
 			velocity.y = 0;
-			this.y = -this.getHitbox().y;
-		} else if (this.y + gp.tileSize > gp.worldHeight && velocity.y > 0) {
+			position.setLocation(position.getX(), -this.getHitbox().y);
+//			this.y = -this.getHitbox().y;
+		} else if (position.getY() + gp.tileSize > gp.worldHeight && velocity.y > 0) {
 			velocity.y = 0;
-			this.y = gp.worldHeight - gp.tileSize;
+			position.setLocation(position.getX(), gp.worldHeight - gp.tileSize);
+//			this.y = gp.worldHeight - gp.tileSize;
 		}
 	}
 	
 	public void updateHorizontalMovement() {
-		this.x += velocity.x;
+//		this.x += velocity.x;
+		position.setLocation(position.getX() + velocity.x, position.getY());
 	}
 	
 	public void updateVerticalMovement() {
-		this.y += velocity.y;		
+//		this.y += velocity.y;		
+		position.setLocation(position.getX(), position.getY() + velocity.y);
 	}
 	
 	public void loadAnimation() {
@@ -203,6 +212,6 @@ public class Oldman extends GameObject {
 	
 	@Override
 	public void draw(Graphics2D g2) {
-		g2.drawImage(currentAnimation.getCurrentFrame(), (int) x, (int) y, (int) this.getWidth(), (int) this.getHeight(), null);
+		g2.drawImage(currentAnimation.getCurrentFrame(), (int) position.getX(), (int) position.getY(), (int) this.getWidth(), (int) this.getHeight(), null);
 	}
 }

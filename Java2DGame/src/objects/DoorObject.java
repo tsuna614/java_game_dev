@@ -1,11 +1,13 @@
 package objects;
 
+import java.awt.geom.Point2D;
+
 import main.GamePanel;
 
 public class DoorObject extends GameObject {
 	
-	public DoorObject(int x, int y, GamePanel gp) {
-		super(x, y);
+	public DoorObject(Point2D position, GamePanel gp) {
+		super(position);
 		this.gp = gp;
 		
 		this.setWidth(gp.tileSize);

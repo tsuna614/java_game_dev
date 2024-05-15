@@ -2,6 +2,7 @@ package objects;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 
@@ -13,8 +14,8 @@ import utils.Sprite;
 public class TreeObject extends GameObject {
 	public int treeType;
 	
-	public TreeObject(float x, float y, int treeType, GamePanel gp) {
-		super(x, y);
+	public TreeObject(Point2D position, int treeType, GamePanel gp) {
+		super(position);
 		this.gp = gp;
 		
 		// the width and height of this tree object is only for drawing sprite
@@ -40,6 +41,6 @@ public class TreeObject extends GameObject {
 	
 	@Override
 	public void draw(Graphics2D g2) {
-		g2.drawImage(this.sprite, (int) x, (int) y  - gp.tileSize * 2, (int) this.getWidth(), (int) this.getHeight(), null);
+		g2.drawImage(this.sprite, (int) position.getX(), (int) position.getY()  - gp.tileSize * 2, (int) this.getWidth(), (int) this.getHeight(), null);
 	}
 }

@@ -1,8 +1,9 @@
-package entity;
+package objects;
 
 import java.awt.Graphics2D;
 
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,10 +18,6 @@ import HUD.GUI;
 import main.GamePanel;
 import main.GamePanel.GameState;
 import main.KeyHandler;
-import objects.BootsObject;
-import objects.DoorObject;
-import objects.GameObject;
-import objects.KeyObject;
 import utils.Animation;
 import utils.Sprite;
 import utils.Vector2;
@@ -95,8 +92,8 @@ public class Player extends GameObject {
 	private Animation currentAnimation;
 	
 	
-	public Player(float x, float y, GamePanel gp, KeyHandler keyH) {
-		super(x, y);
+	public Player(Point2D position, GamePanel gp, KeyHandler keyH) {
+		super(position);
 		this.gp = gp;
 		this.keyHandler = keyH;
 		
@@ -104,6 +101,7 @@ public class Player extends GameObject {
 		this.setHeight(gp.tileSize);
 
 		this.setHitBox(new Rectangle(8, 16, gp.tileSize - 8 * 2, gp.tileSize - 16));
+		
 		
 		velocity = new Vector2(0,0);
 		
@@ -234,16 +232,20 @@ public class Player extends GameObject {
 		}
 		
 		
-//		this.exchangeAngleToVelocity(rotationAngle);
-//		
-//		if (keyHandler.leftPressed) {
-//			rotationAngle -= 2;
-//		}
-//		if (keyHandler.rightPressed) {
-//			rotationAngle += 2;
-//		}
+		this.exchangeAngleToVelocity(rotationAngle);
+		
+		if (keyHandler.leftPressed) {
+			rotationAngle -= 2;
+		}
+		if (keyHandler.rightPressed) {
+			rotationAngle += 2;
+		}
 	}
 	
+	private void exchangeAngleToVelocity(float rotationAngle) {
+		
+	}
+
 	public void checkIfPlayerMoveDiagonally() {
 		if (velocity.x != 0 && velocity.y != 0) {
 			velocity.x = (float) (velocity.x / Math.sqrt(2));
@@ -256,18 +258,20 @@ public class Player extends GameObject {
 		while (iter.hasNext()) {
 			GameObject block = iter.next();
 			
-			final float blockX = block.getPosition().x + block.getHitbox().x;
-			final float blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
+			final double blockX = block.getPosition().getX() + block.getHitbox().x;
+			final double blockWidth = block.getHitbox().getWidth() == 0 ? block.getWidth() : block.getHitbox().width;
 			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.x < 0) {
 						velocity.x = 0;
-						this.x = blockX + blockWidth - this.getHitbox().x;
+//						this.x = blockX + blockWidth - this.getHitbox().x;
+						position.setLocation(blockX + blockWidth - this.getHitbox().x, position.getY());
 					}
 					else if (velocity.x > 0) {
 						velocity.x = 0;
-						this.x = blockX - this.getWidth() + this.getHitbox().x;
+//						this.x = blockX - this.getWidth() + this.getHitbox().x;
+						position.setLocation(blockX - this.getWidth() + this.getHitbox().x, position.getY());
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
@@ -275,11 +279,13 @@ public class Player extends GameObject {
 		}
 		
 		// check collision with world bounder
-		if (this.x < 0 && velocity.x < 0) {
+		if (position.getX() < 0 && velocity.x < 0) {
 			velocity.x = 0;
-			this.x = -this.getHitbox().x;
-		} else if (this.x + gp.tileSize - this.getHitbox().x > gp.worldWidth && velocity.x > 0) {
-			this.x = gp.worldWidth - gp.tileSize + this.getHitbox().x;
+//			this.x = -this.getHitbox().x;
+			position.setLocation(-this.getHitbox().x, position.getY());
+		} else if (position.getX() + gp.tileSize - this.getHitbox().x > gp.worldWidth && velocity.x > 0) {
+//			this.x = gp.worldWidth - gp.tileSize + this.getHitbox().x;
+			position.setLocation(gp.worldWidth - gp.tileSize + this.getHitbox().x, position.getY());
 		}
 	}
 	
@@ -289,18 +295,20 @@ public class Player extends GameObject {
 		while (iter.hasNext()) {
 			GameObject block = iter.next();
 
-			final float blockY = block.getPosition().y + block.getHitbox().y;
-			final float blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
+			final double blockY = block.getPosition().getY() + block.getHitbox().y;
+			final double blockHeight = block.getHitbox().getHeight() == 0 ? block.getHeight() : block.getHitbox().height;
 			
 			if (gp.checkCollision(this, block) && block.hasCollision) {
 				if (block.isBlocking) {
 					if (velocity.y < 0) {
 						velocity.y = 0;
-						this.y = blockY + blockHeight - this.getHitbox().y;
+//						this.y = blockY + blockHeight - this.getHitbox().y;
+						position.setLocation(position.getX(), blockY + blockHeight - this.getHitbox().y);
 					}
 					else if (velocity.y > 0) {
 						velocity.y = 0;
-						this.y = blockY - this.getHeight();
+//						this.y = blockY - this.getHeight();
+						position.setLocation(position.getX(), blockY - this.getHeight());
 					}
 				}
 				checkOtherGameObjectCollision(block, iter);
@@ -308,12 +316,14 @@ public class Player extends GameObject {
 			
 		}
 		
-		if (this.y + this.getHitbox().y < 0 && velocity.y < 0) {
+		if (position.getY() + this.getHitbox().y < 0 && velocity.y < 0) {
 			velocity.y = 0;
-			this.y = -this.getHitbox().y;
-		} else if (this.y + gp.tileSize > gp.worldHeight && velocity.y > 0) {
+//			this.y = -this.getHitbox().y;
+			position.setLocation(position.getX(), -this.getHitbox().y);
+		} else if (position.getY() + gp.tileSize > gp.worldHeight && velocity.y > 0) {
 			velocity.y = 0;
-			this.y = gp.worldHeight - gp.tileSize;
+//			this.y = gp.worldHeight - gp.tileSize;
+			position.setLocation(position.getX(), gp.worldHeight - gp.tileSize);
 		}
 	}
 	
@@ -323,7 +333,7 @@ public class Player extends GameObject {
 			gp.playSFX("pickupCoin.wav");
 			
 			// show text "Key picked up" and delete after 1s
-			GUI gui = new GUI(this.x, this.y, "Key picked up");
+			GUI gui = new GUI(position.getX(), position.getY(), "Key picked up");
 			gp.GUIList.add(gui);
 			timer.schedule(new DeleteGUI(gui), 1000); // 1000 milliseconds
 			
@@ -340,7 +350,7 @@ public class Player extends GameObject {
 			gp.playSFX("powerUp.wav");
 			speed += 2;
 			
-			GUI gui = new GUI(this.x, this.y, "+Speed");
+			GUI gui = new GUI(position.getX(), position.getY(), "+Speed");
 			gp.GUIList.add(gui);
 			timer.schedule(new DeleteGUI(gui), 1000); // 1000 milliseconds
 			
@@ -364,13 +374,15 @@ public class Player extends GameObject {
 //		if (keyHandler.upPressed) worldX += velocity.x;
 //		else if (keyHandler.downPressed) worldX -= velocity.x;
 		
-		this.x += velocity.x;
+//		this.x += velocity.x;
+		position.setLocation(position.getX() + velocity.x, position.getY());
 	}
 	
 	public void updatePlayerVerticalPosition() {
 //		if (keyHandler.upPressed) worldY += velocity.y;
 //		else if (keyHandler.downPressed) worldY -= velocity.y;
-		this.y += velocity.y;
+//		this.y += velocity.y;
+		position.setLocation(position.getX(), position.getY() + velocity.y);
 	}
 	
 	public void gettingHit() {
@@ -386,7 +398,7 @@ public class Player extends GameObject {
 //		g2.rotate(Math.toRadians(rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);
 		
 //		g2.scale(-1, 1);
-		g2.drawImage(currentAnimation.getCurrentFrame(), (int) this.x, (int) this.y, gp.tileSize, gp.tileSize, null);
+		g2.drawImage(currentAnimation.getCurrentFrame(), (int) position.getX(), (int) position.getY(), gp.tileSize, gp.tileSize, null);
 //		g2.scale(-1, 1);
 //		g2.drawRect((int) worldX, (int) worldY, gp.tileSize, gp.tileSize);
 //		g2.rotate(Math.toRadians(-rotationAngle), worldX + gp.tileSize / 2, worldY + gp.tileSize / 2);

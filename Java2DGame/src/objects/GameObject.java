@@ -2,6 +2,7 @@ package objects;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -13,8 +14,9 @@ import utils.Sprite;
 import utils.Vector2;
 
 public class GameObject {
-	protected float x;
-	protected float y;
+//	protected float x;
+//	protected float y;
+	protected Point2D position;
 	
 	private float width = 0;
 	private float height = 0;
@@ -33,26 +35,32 @@ public class GameObject {
 	
 	
 ////////////////// CONSTRUCTOR /////////////////////
-	public GameObject(float x, float y) {
-		this.x = x;
-		this.y = y;
-		
+	public GameObject(Point2D position) {
+		this.position = position;
+//		this.x = x;
+//		this.y = y;
+//		
 		this.height = 16 * 3;
 		this.width = 16 * 3;
 	}
 	
 	////////////////// OBJECT ATTRIBUTES /////////////////////
-	public Vector2 getPosition() {
-		return new Vector2(this.x, this.y);
+	public Point2D getPosition() {
+//		return new Vector2(this.x, this.y);
+		return position;
 	}
 	
-	public void setX(float x) {
-		this.x = x;
+	public void setPosition(Point2D position) {
+		this.position = position;
 	}
 	
-	public void setY(float y) {
-		this.y = y;
-	}
+//	public void setX(float x) {
+//		this.x = x;
+//	}
+//	
+//	public void setY(float y) {
+//		this.y = y;
+//	}
 	
 	public float getWidth() {
 		return width;
@@ -86,6 +94,6 @@ public class GameObject {
 	}
 	
 	public void draw(Graphics2D g2) {
-		g2.drawImage(sprite, (int) x, (int) y, (int) width, (int) height, null);
+		g2.drawImage(sprite, (int) position.getX(), (int) position.getY(), (int) width, (int) height, null);
 	}
 }
