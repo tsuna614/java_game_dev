@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import main.GamePanel;
 import objects.BootsObject;
+import objects.Bullet;
 import objects.DoorObject;
 import objects.GameObject;
 import objects.KeyObject;
@@ -33,6 +34,8 @@ public class ObjectManager {
 		
 		gameObjects.add(new Oldman(new Point2D.Double(400, 200), gp));
 		gameObjects.add(new Slime(new Point2D.Double(100, 200), gp));
+		
+//		gameObjects.add(new Bullet(new Point2D.Double(-10, -10), gp, 90.0));
 
 		for (GameObject object : gameObjects) {
 			gp.addGameObject(object);		}

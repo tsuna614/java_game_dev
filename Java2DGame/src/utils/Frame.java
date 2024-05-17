@@ -3,6 +3,8 @@ package utils;
 import java.awt.image.BufferedImage;
 
 public class Frame {
+	// the main point of this class is to asign each sprite (BufferedImage) with a duration
+	
 	private BufferedImage frame;
 	private int duration;
 	

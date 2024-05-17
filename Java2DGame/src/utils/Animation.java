@@ -63,10 +63,12 @@ public class Animation {
     	currentFrame = 0;
     }
     
+    // call this in draw method (g2.drawImage) to draw the current frame
     public BufferedImage getCurrentFrame() {
     	return frames[currentFrame].getFrame();
     }
     
+    // this must be called in Object's update method
     public void update() {
     	if (!isStopped) {
     		frameCount++;

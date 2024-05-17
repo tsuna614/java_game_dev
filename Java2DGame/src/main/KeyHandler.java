@@ -2,11 +2,13 @@ package main;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Point2D;
 
 import main.GamePanel.GameState;
+import objects.Bullet;
 
 public class KeyHandler implements KeyListener {
-	public boolean upPressed, downPressed, leftPressed, rightPressed, TPressed, spacePressed = false;
+	public boolean upPressed, downPressed, leftPressed, rightPressed, TPressed, spacePressed, JPressed = false;
 	GamePanel gp;
 	
 	boolean isShowingDialogue;
@@ -49,6 +51,10 @@ public class KeyHandler implements KeyListener {
 			if (keyCode == KeyEvent.VK_T) {
 				TPressed = !TPressed;
 			}
+			if (keyCode == KeyEvent.VK_J) {
+				JPressed = true;
+				gp.tank.shoot();
+			}
 			
 			if (keyCode == KeyEvent.VK_P) {
 				if (gp.gameState == GameState.play) {
@@ -81,6 +87,9 @@ public class KeyHandler implements KeyListener {
 		}
 		if (keyCode == KeyEvent.VK_D) {
 			rightPressed = false;
+		}
+		if (keyCode == KeyEvent.VK_J) {
+			JPressed = false;
 		}
 		
 		if (keyCode == KeyEvent.VK_SPACE) {

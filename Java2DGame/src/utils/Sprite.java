@@ -37,4 +37,12 @@ public class Sprite {
 		}
 		return sprite.getSubimage(xGrid * TILE_SIZE_32, yGrid * TILE_SIZE_32, TILE_SIZE_32, TILE_SIZE_32);
 	}
+	
+	public static BufferedImage getSprite256(int xGrid, int yGrid) {
+		// default
+		if (sprite == null) {
+			loadSprite("res/player/player.png");
+		}
+		return sprite.getSubimage(xGrid * 256, yGrid * 256, 256, 256);
+	}
 }
