@@ -43,11 +43,15 @@ public class HUD {
 	public void draw(Graphics2D g2) {
 		if (gp.gameState == GameState.inMenu) {
 			drawMenu(g2);
+		} else if (gp.gameState == GameState.gameOver) {
+			drawGameOverScreen(g2);
 		} else {
 			
 //			drawKey(g2);
 			
 			drawHeart(g2);
+			
+			drawScore(g2);
 			
 			if (gp.gameState == GameState.inDialogue) {
 				drawDialogueScreen(g2);
@@ -55,16 +59,23 @@ public class HUD {
 			
 			if (gp.gameState == GameState.paused) {
 				drawPausedScreen(g2);			
-			}		
-			
+			}
 		}
 		
 	}
 	
+	private void drawGameOverScreen(Graphics2D g2) {
+		g2.setFont(arial_30);
+		g2.setColor(Color.white);
+		g2.drawString("Game Over", gp.screenWidth / 2 - 100, gp.screenHeight / 2);
+		g2.drawString("Your score: " + gp.score, gp.screenWidth / 2 - 130, gp.screenHeight / 2 + 40);
+	}
+
 	private void drawMenu(Graphics2D g2) {
 		g2.setFont(arial_30);
 		g2.setColor(Color.white);
-		g2.drawString("Pixel Adventure", gp.tileSize, gp.tileSize);
+		g2.drawString("Tank shooter 2D", gp.screenWidth / 2 - 100, gp.screenHeight / 2);
+		g2.drawString("Press enter to start", gp.screenWidth / 2 - 120, gp.screenHeight / 2 + 50);
 	}
 	
 	private void drawKey(Graphics2D g2) {
@@ -76,15 +87,21 @@ public class HUD {
 	
 	private void drawHeart(Graphics2D g2) {
 		// every 2 currentLife player have, draw a full heart.
-		for (int i=1; i<gp.player.currentLife; i += 2) {
+		for (int i=1; i<gp.tank.currentLife; i += 2) {
 			g2.drawImage(heart, (int) gp.camX + 30 * i, (int) gp.camY + 20, gp.tileSize, gp.tileSize, null);			
 		}
 		
 		// if the player's health is odd number, draw an extra half heart at the end
-		if (gp.player.currentLife % 2 != 0) {
-			int positionX = (int) gp.camX + 30 * (gp.player.currentLife);
+		if (gp.tank.currentLife % 2 != 0) {
+			int positionX = (int) gp.camX + 30 * (gp.tank.currentLife);
 			g2.drawImage(halfHeart, positionX, (int) gp.camY + 20, gp.tileSize, gp.tileSize, null);	
 		}
+	}
+	
+	private void drawScore(Graphics2D g2) {
+		g2.setFont(arial_30);
+		g2.setColor(Color.white);
+		g2.drawString("Score: " + gp.score, gp.camX + 30, gp.camY + 120);
 	}
 	
 	private void drawPausedScreen(Graphics2D g2) {

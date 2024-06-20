@@ -1,5 +1,6 @@
 package utils;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -47,6 +48,8 @@ public class TileManager {
 	public final int SOIL_CORNER_BOTTOM_LEFT 	= 36;
 	public final int SOIL_CORNER_BOTTOM_RIGHT 	= 37;
 	
+	public final int WATER_BARRIER				= 38;
+	
 	
 	public final int TILE_SIZE = 16;
 	
@@ -55,6 +58,7 @@ public class TileManager {
 //	Tile[] tile;
 	BufferedImage grassSprite;
 	BufferedImage soilSprite;
+	BufferedImage waterSprite;
 	BufferedImage[] sprites = new BufferedImage[100];
 	int mapTileNum[][];
 	
@@ -71,7 +75,8 @@ public class TileManager {
 	public void getTileImage() {
 		try {
 			grassSprite = ImageIO.read(new File("res/tiles/Grass (96x48).png"));
-			soilSprite = ImageIO.read(new File("res/tiles/soil.png"));		
+			soilSprite = ImageIO.read(new File("res/tiles/soil.png"));	
+			waterSprite = ImageIO.read(new File("res/tiles/water.png"));	 
 			
 			for (int i=10; i<= 37; i++) {
 				switch (i) {
@@ -119,6 +124,9 @@ public class TileManager {
 					break;
 				case WATER_CENTER:
 					sprites[i] = grassSprite.getSubimage(5 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+					break;
+				case WATER_BARRIER:
+					sprites[i] = waterSprite.getSubimage(0 * TILE_SIZE, 1 * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 					break;
 				
 				case SOIL_TOP_LEFT:
@@ -195,6 +203,9 @@ public class TileManager {
 					case WATER_CENTER:
 						block.isBlocking = true;
 						break;
+					case WATER_BARRIER:
+						block.isBlocking = true;
+						break;
 					}
 					gp.addGameObject(block);
 					
@@ -225,5 +236,7 @@ public class TileManager {
 		int blockType = mapTileNum[positionX / gp.tileSize][positionY / gp.tileSize];
 		
 		g2.drawImage(sprites[blockType], positionX, positionY, gp.tileSize, gp.tileSize, null);
+		g2.setColor(Color.red);
+//		g2.drawRect(positionX, positionY, gp.tileSize, gp.tileSize);
 	}
 }

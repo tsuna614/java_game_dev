@@ -213,5 +213,6 @@ public class Oldman extends GameObject {
 	@Override
 	public void draw(Graphics2D g2) {
 		g2.drawImage(currentAnimation.getCurrentFrame(), (int) position.getX(), (int) position.getY(), (int) this.getWidth(), (int) this.getHeight(), null);
+		g2.drawPolygon(getHitboxAsPolygon());
 	}
 }

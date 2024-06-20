@@ -1,6 +1,8 @@
 package objects;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -83,6 +85,17 @@ public class GameObject {
 		return this.hitbox;
 	}
 	
+	////////////////// RECTANGLE TO POLYGON /////////////////////
+	
+	public Polygon getHitboxAsPolygon() {
+//		Rectangle rect = this.hitbox;
+//		int[] xpoints = {rect.x, rect.x + rect.width, rect.x + rect.width, rect.x};
+//		int[] ypoints = {rect.y, rect.y, rect.y + rect.height, rect.y + rect.height};
+		int[] xpoints = {(int) this.position.getX(), (int) (this.position.getX() + this.width), (int) (this.position.getX() + this.width), (int) this.position.getX()};
+		int[] ypoints = {(int) this.position.getY(), (int) this.position.getY(), (int) (this.position.getY() + this.width), (int) (this.position.getY() + this.width)};
+		return new Polygon(xpoints, ypoints, 4); 
+	}
+	
 	////////////////// LOADING SPRITE AND DRAW /////////////////////
 	public void getObjectImage(String imagePath) {
 		try {
@@ -95,5 +108,7 @@ public class GameObject {
 	
 	public void draw(Graphics2D g2) {
 		g2.drawImage(sprite, (int) position.getX(), (int) position.getY(), (int) width, (int) height, null);
+//		g2.setColor(Color.red);
+//		g2.drawPolygon(this.getHitboxAsPolygon());
 	}
 }

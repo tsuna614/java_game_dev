@@ -8,6 +8,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JPanel;
 
@@ -22,7 +23,9 @@ import objects.Oldman;
 import objects.Player;
 import objects.Slime;
 import objects.Tank;
+import objects.EnemyTank;
 import objects.TreeObject;
+import objects.Wall;
 import utils.ObjectManager;
 import utils.TileManager;
 
@@ -43,29 +46,30 @@ public class GamePanel extends JPanel implements Runnable {
 	public float camX, camY;
 	
 	// WORLD SETTINGS
-	public final int maxWorldCol = 43;
-	public final int maxWorldRow = 41;
+	public final int maxWorldCol = 45;
+	public final int maxWorldRow = 43;
 	public final int worldWidth = maxWorldCol * tileSize;
 	public final int worldHeight = maxWorldRow * tileSize;
 	
 	int FPS = 60;
 	
-	KeyHandler keyHandler = new KeyHandler(this);
+	public KeyHandler keyHandler = new KeyHandler(this);
 	Thread gameThread;
 	
 	// PLAYER
 	public Player player;
 	public Tank tank;
+	public int score = 0;
 	
 	// DRAW TILES AND SET INVISIBLE WALLS
 	TileManager tileManager = new TileManager(this);
 	
 	// COLLISION BLOCKS
-	public final ArrayList<GameObject> gameObjects = new ArrayList<>();
+	public final CopyOnWriteArrayList<GameObject> gameObjects = new CopyOnWriteArrayList<>(); // CopyOnWriteArrayList solves the ConcurrentModificationException
 	
 	// SOUND
 	Sound sound = new Sound();
-	boolean playMusic = false;
+	boolean playMusic = true;
 	boolean playSFX = true;
 	
 	// HUD
@@ -77,7 +81,8 @@ public class GamePanel extends JPanel implements Runnable {
 		paused,
 		play,
 		inDialogue,
-		inMenu
+		inMenu,
+		gameOver
 	}
 	public GameState gameState;
 	
@@ -91,8 +96,9 @@ public class GamePanel extends JPanel implements Runnable {
 		this.setFocusable(true); // with this, this GamePanel can be 'focused' to receive key input
 		
 		player = new Player(new Point2D.Double(0, 0) , this, keyHandler);
-		tank = new Tank(new Point2D.Double(100, 100) , this, keyHandler);
-		
+//		tank = new Tank(new Point2D.Double(19 * tileSize, 30 * tileSize) , this, keyHandler);
+		tank = new Tank(new Point2D.Double(19 * tileSize, 33 * tileSize) , this, keyHandler);
+				
 		this.gameState = GameState.inMenu;
 		
 		tileManager.loadMap("map03.txt");
@@ -104,7 +110,10 @@ public class GamePanel extends JPanel implements Runnable {
 	}
 	
 	public void addGameObject(GameObject object) {
-		this.gameObjects.add(object);
+		synchronized (gameObjects) {
+			gameObjects.add(object);
+		}
+//		this.gameObjects.add(object);
 	}
 	
 	public void removeGameObject(GameObject object) {
@@ -121,7 +130,7 @@ public class GamePanel extends JPanel implements Runnable {
 //		    GameObject nextObject = iterator.next();
 //		    if (nextObject.equals(object)) {
 //		    	iterator = null;
-////		        iterator.remove(); // Safe to remove using Iterator
+//		        iterator.remove(); // Safe to remove using Iterator
 //		    }
 //		}
 		
@@ -216,6 +225,8 @@ public class GamePanel extends JPanel implements Runnable {
 				((Slime) object).update();
 			} else if (object instanceof Bullet) {
 				((Bullet) object).update();
+			} else if (object instanceof EnemyTank) {
+				((EnemyTank) object).update();
 			}
 		}
 		
@@ -230,7 +241,7 @@ public class GamePanel extends JPanel implements Runnable {
 		
 		Graphics2D g2 = (Graphics2D)g; // change Graphics to Graphics2D
 		
-		if (gameState != GameState.inMenu) {
+		if (gameState != GameState.inMenu && gameState != GameState.gameOver) {
 			// set the camera to follow the player
 			camX = (float) (tank.getPosition().getX() - screenWidth / 2);
 			camY = (float) (tank.getPosition().getY() - screenHeight / 2);
@@ -259,9 +270,9 @@ public class GamePanel extends JPanel implements Runnable {
 		ArrayList<GameObject> priorityObjects = new ArrayList<>();
 		
 		for (GameObject object : gameObjects) {
-			if (object instanceof KeyObject || object instanceof DoorObject || object instanceof BootsObject) {
+			if (object instanceof KeyObject || object instanceof DoorObject || object instanceof BootsObject || object instanceof Wall) {
 				object.draw(g2);
-			} else if (object instanceof Bullet) {
+			} else if (object instanceof Bullet || object instanceof EnemyTank) {
 				object.draw(g2);
 			} else if (object instanceof TreeObject || object instanceof Oldman) {
 				if (tank.getPosition().getY() < object.getPosition().getY() - object.getHitbox().y) {
@@ -269,14 +280,15 @@ public class GamePanel extends JPanel implements Runnable {
 				} else {
 					object.draw(g2);
 				}
-			} else if (object instanceof Slime) {
+			}
+			else if (object instanceof Slime) {
 				if (tank.getPosition().getY() + tank.getHitbox().height< object.getPosition().getY() + object.getHitbox().y + object.getHitbox().height) {
 					priorityObjects.add(object);					
 				} else {
 					object.draw(g2);
 				}
 			}
-				else {
+			else {
 				tileManager.drawSingle(g2, (int) object.getPosition().getX(), (int) object.getPosition().getY());
 			}
 		}
@@ -288,6 +300,10 @@ public class GamePanel extends JPanel implements Runnable {
 		}
 		
 		priorityObjects.clear();
+	}
+	
+	public void switchGameState(GameState newGameState) {
+		gameState = newGameState;
 	}
 	
 	public void playMusic(String fileName) {
