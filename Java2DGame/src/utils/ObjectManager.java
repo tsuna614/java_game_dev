@@ -22,7 +22,7 @@ public class ObjectManager {
 		gp = gamePanel;
 	}
 
-	public static void addObjects() {
+	public static void initiateGameObjects() {
 		
 		ArrayList<GameObject> gameObjects = new ArrayList<>();
 		
@@ -59,5 +59,10 @@ public class ObjectManager {
 
 		for (GameObject object : gameObjects) {
 			gp.addGameObject(object);		}
+	}
+	
+	public static void spawnEnemyTank(Point2D location) {
+		EnemyTank enemyTank = new EnemyTank(location, gp, gp.keyHandler);
+		gp.addGameObject(enemyTank);
 	}
 }

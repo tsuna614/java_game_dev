@@ -19,6 +19,7 @@ import utils.Vector2;
 enum TankState {
 	moving,
 	idle,
+	die
 }
 
 public class Tank extends GameObject {

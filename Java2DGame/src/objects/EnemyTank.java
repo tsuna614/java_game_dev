@@ -17,6 +17,7 @@ import main.KeyHandler;
 import main.GamePanel.GameState;
 import objects.Player.DeleteGUI;
 import utils.Animation;
+import utils.ObjectManager;
 import utils.SATCollision;
 import utils.Sprite;
 import utils.Vector2;
@@ -34,10 +35,12 @@ public class EnemyTank extends GameObject {
 	TankState tankState = TankState.idle;
 	
 	private Animation movingAnimation;
+	private Animation dyingAnimation;
 	private Animation currentAnimation;
 	
 	private int bulletInterval = 0;
 	private int immunityFrames = -1;
+	private int deathTimeout = 0; // if this reach a certain amount (300 for example), delete the tank
 	
 	int[] xPoly = {0, 0, 0, 0};
 	int[] yPoly = {0, 0, 0, 0};
@@ -76,21 +79,37 @@ public class EnemyTank extends GameObject {
 		Sprite.loadSprite("res/player/tank3.png");
 		final BufferedImage[] movingSprites = {Sprite.getSprite256(0, 0), Sprite.getSprite256(1, 0)};
 		
+		Sprite.loadSprite("res/player/bullets.png");
+		final BufferedImage[] dyingSprites = {Sprite.getSprite256(0, 0), Sprite.getSprite256(1, 0), Sprite.getSprite256(2, 0), Sprite.getSprite256(3, 0), Sprite.getSprite256(4, 0), Sprite.getSprite256(5, 0), Sprite.getSprite256(6, 0), Sprite.getSprite256(7, 0)};
+		
+		
 		movingAnimation = new Animation(movingSprites, 10);
+		dyingAnimation = new Animation(dyingSprites, 5);
 	}
 
 
 	public void update() {
 		updateTankAnimation();
-		updateEnemyMovemonet();
-		updateTankImmunityFrames();
-		checkCollision();
-		updateVelocityBasedOnAngle();
-		updateTankVerticalPosition();
-		updateTankHorizontalPosition();
-		updateNewHitbox();
+		if (tankState == TankState.die) {
+			deletingTank();			
+		} else {			
+			updateEnemyMovemonet();
+			updateTankImmunityFrames();
+			checkCollision();
+			updateVelocityBasedOnAngle();
+			updateTankVerticalPosition();
+			updateTankHorizontalPosition();
+			updateNewHitbox();
+		}
 	}
 	
+	private void deletingTank() {
+		if (deathTimeout >= 5 * 9) {
+			gp.removeGameObject(this);
+		}
+		deathTimeout++;
+	}
+
 	private void updateTankImmunityFrames() {
 		if (immunityFrames != -1) {
 			immunityFrames++;
@@ -228,14 +247,14 @@ public class EnemyTank extends GameObject {
 						if (immunityFrames != -1) return;
 						immunityFrames = 0;
 						
+						// increment the score, play sound and show +100 text
 						gp.score += 100;
-						
 						gp.playSFX("explosion2.wav");
-						
 						GUI gui = new GUI(position.getX(), position.getY(), "+100");
 						gp.GUIList.add(gui);
 						timer.schedule(new DeleteGUI(gui), 1000);
 						
+						// get random location
 						Random rand = new Random();
 						int randomNumber = rand.nextInt(35) + 3; // get random number range 3 - 35
 						int yLocation;
@@ -246,13 +265,19 @@ public class EnemyTank extends GameObject {
 							yLocation = 41;
 						}
 						
-						System.out.println(yLocation);
-						
+//						// spawn new enemy tank
 						Point2D newLocation = new Point2D.Double(randomNumber * gp.tileSize, yLocation * gp.tileSize);
-						this.setPosition(newLocation);
+						ObjectManager.spawnEnemyTank(newLocation);
 						
-						// delete bullet
+//						Point2D newLocation = new Point2D.Double(randomNumber * gp.tileSize, yLocation * gp.tileSize);
+//						this.setPosition(newLocation);
+						
+						// set tankState to die, delete bullet and this tank
+						tankState = TankState.die;
+						this.isBlocking = false;
 						gp.removeGameObject(block);
+//						gp.removeGameObject(this);
+						return;
 					}
 				}
 			}
@@ -282,12 +307,21 @@ public class EnemyTank extends GameObject {
 	private void updateTankAnimation() {
 		currentAnimation = movingAnimation;
 		
-		if (tankState == TankState.moving) {
-			currentAnimation.start();
-		} else if (tankState == TankState.idle) {
-			currentAnimation.stop();
+		if (tankState == TankState.die) {
+			currentAnimation = dyingAnimation;
+			currentAnimation.isLoop = false;
+		} else {
+			if (velocity.x != 0) tankState = TankState.moving;
+			else tankState = TankState.idle;
+			
+			if (tankState == TankState.moving) {
+				currentAnimation.start();
+			} else if (tankState == TankState.idle) {
+				currentAnimation.stop();
+			}
 		}
 		
+//		
 		currentAnimation.update();
 	}
 

@@ -13,7 +13,7 @@ public class Animation {
     private int totalFrames;                // total amount of frames for your animation
     
     private boolean isStopped;
-    private boolean isLoop = true;
+    public boolean isLoop = true;
     
     private Frame[] frames;
 //    private static ArrayList<Frame> frames = new ArrayList<>();
@@ -74,7 +74,13 @@ public class Animation {
     		frameCount++;
     		if (frameCount > frameDelay) {
     			frameCount = 0;
-    			currentFrame += animationDirection; 					
+    			
+    			// doesn't work when the animation is reverted yet
+    			if (isLoop || (currentFrame < totalFrames - 1 && currentFrame >= 0))
+    			{
+    				currentFrame += animationDirection;    				
+    			}
+    			
     			if (currentFrame > totalFrames - 1) {
     				currentFrame = 0;
     			} else if (currentFrame < 0) {

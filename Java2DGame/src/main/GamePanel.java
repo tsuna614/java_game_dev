@@ -69,8 +69,8 @@ public class GamePanel extends JPanel implements Runnable {
 	
 	// SOUND
 	Sound sound = new Sound();
-	boolean playMusic = true;
-	boolean playSFX = true;
+	boolean playMusic = false;
+	boolean playSFX = false;
 	
 	// HUD
 	public HUD hud = new HUD(this);
@@ -106,7 +106,7 @@ public class GamePanel extends JPanel implements Runnable {
 		playMusic("BlueBoyAdventure.wav");
 		
 		ObjectManager.loadGamePanel(this);
-		ObjectManager.addObjects();
+		ObjectManager.initiateGameObjects();
 	}
 	
 	public void addGameObject(GameObject object) {
